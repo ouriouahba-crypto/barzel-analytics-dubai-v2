@@ -16,7 +16,6 @@ def run_page(filename: str):
     spec.loader.exec_module(mod)
 
 
-# Load once (fast) + keep in session
 if "df" not in st.session_state:
     st.session_state["df"] = assemble(load_data())
 
@@ -29,11 +28,15 @@ hero(
     "Analytical cockpit (no decision in UI). The PDF memo contains the decision narrative.",
 )
 
-# Top navigation (Lovable-like)
 NAV = [
     ("Overview", "1_Executive_Snapshot.py"),
     ("Compare", "2_Compare.py"),
-    ("Map", "3_Map_Micro.py"),
+    ("Map & Micro", "3_Map_Micro.py"),
+    ("Pricing", "5_Pricing_Lab.py"),
+    ("Liquidity", "6_Liquidity_Negotiation.py"),
+    ("Yield", "7_Yield_Vacancy.py"),
+    ("Costs", "8_Costs_Charges.py"),
+    ("Data", "9_Data_Quality.py"),
     ("PDF", "4_PDF_Memo_Builder.py"),
 ]
 
@@ -42,7 +45,6 @@ active = st.session_state.get("nav_active", labels[0])
 active = top_nav(active=active, items=labels)
 st.session_state["nav_active"] = active
 
-# Small “status row” like a real SaaS
 c1, c2, c3 = st.columns([1, 1, 2])
 with c1:
     st.caption(f"Rows: **{len(df):,}**")
@@ -54,7 +56,6 @@ with c3:
 
 st.divider()
 
-# Route to the right page file
 for label, file in NAV:
     if label == active:
         run_page(file)

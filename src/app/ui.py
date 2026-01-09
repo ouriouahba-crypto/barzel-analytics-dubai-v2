@@ -27,14 +27,11 @@ def load_data() -> pd.DataFrame:
     return df
 
 
-# =========================
-# Lovable-like skin
-# =========================
 def inject_lovable_skin():
     st.markdown(
         """
         <style>
-        /* ---- Kill Streamlit chrome ---- */
+        /* Kill Streamlit chrome */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
@@ -42,7 +39,7 @@ def inject_lovable_skin():
         [data-testid="stStatusWidget"] {visibility: hidden;}
         [data-testid="stDecoration"] {display: none;}
 
-        /* ---- Layout ---- */
+        /* Layout */
         .block-container {
             padding-top: 1.2rem;
             padding-bottom: 2.0rem;
@@ -53,7 +50,7 @@ def inject_lovable_skin():
             font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
         }
 
-        /* ---- Cards ---- */
+        /* Cards */
         .ba-card {
             background: rgba(255,255,255,0.06);
             border: 1px solid rgba(255,255,255,0.09);
@@ -86,7 +83,7 @@ def inject_lovable_skin():
             color: rgba(229,231,235,0.62);
         }
 
-        /* ---- Buttons (pills) ---- */
+        /* Buttons (pills) */
         .stButton>button {
             border-radius: 999px;
             border: 1px solid rgba(255,255,255,0.10);
@@ -101,14 +98,14 @@ def inject_lovable_skin():
             transform: translateY(-1px);
         }
 
-        /* ---- Tables ---- */
+        /* Tables */
         .stDataFrame, [data-testid="stDataFrame"] {
             border-radius: 16px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.09);
         }
 
-        /* ---- Dividers ---- */
+        /* Dividers */
         hr {
             border: none;
             border-top: 1px solid rgba(255,255,255,0.06);
@@ -159,10 +156,6 @@ def kpi_card(title: str, value: str, sub: str = ""):
 
 
 def top_nav(active: str, items: list[str]) -> str:
-    """
-    Simple top navbar using pill buttons.
-    Returns selected item.
-    """
     cols = st.columns([1.3, *([1] * len(items)), 2.0])
 
     with cols[0]:
@@ -190,13 +183,13 @@ def top_nav(active: str, items: list[str]) -> str:
 
 
 def apply_plotly_theme(fig):
-    # Transparent background + soft grid = “SaaS / trading desk”
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font_color="rgba(229,231,235,0.92)",
         title_font_size=16,
-        margin=dict(l=10, r=10, t=50, b=10),
+        margin=dict(l=10, r=10, t=55, b=10),
+        legend=dict(font=dict(color="rgba(229,231,235,0.80)")),
     )
     fig.update_xaxes(gridcolor="rgba(255,255,255,0.06)", zerolinecolor="rgba(255,255,255,0.08)")
     fig.update_yaxes(gridcolor="rgba(255,255,255,0.06)", zerolinecolor="rgba(255,255,255,0.08)")
