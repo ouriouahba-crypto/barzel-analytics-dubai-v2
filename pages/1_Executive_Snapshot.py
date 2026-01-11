@@ -90,8 +90,8 @@ fp = floor_weighted_price(view)
 if fp.empty:
     st.info("Not enough data for floor premium.")
 else:
-    fig = px.line(fp, x="floor", y="weighted_price_sqm", markers=True, title="Weighted AED/sqm by floor")
-    fig.update_layout(xaxis_title="Floor", yaxis_title="Weighted AED per sqm")
+    fig = px.line(fp, x="floor_bucket", y="weighted_price_sqm", markers=True, title="Weighted AED/sqm by floor range")
+    fig.update_layout(xaxis_title="Floor range", yaxis_title="Weighted AED per sqm")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)
 
 st.divider()
