@@ -85,24 +85,57 @@ def kpi_terrace(df: pd.DataFrame) -> dict:
         "terrace_size_median": float(ts.median()) if ts.notna().any() else np.nan,
     }
 
-
 def floor_weighted_price(df: pd.DataFrame) -> pd.DataFrame:
-    if not {"floor", "price_per_sqm", "size_sqm"}.issubset(df.columns):
-        return pd.DataFrame(columns=["floor", "weighted_price_sqm"])
+    """
+    Returns a floor-bucketed (market-realistic) weighted median AED/sqm.
+    Keeps everything else unchanged.
+    """
+    required = {"floor", "price_per_sqm", "size_sqm"}
+    if not required.issubset(df.columns):
+        return pd.DataFrame(columns=["floor_bucket", "weighted_price_sqm"])
+
     d = df.dropna(subset=["floor", "price_per_sqm", "size_sqm"]).copy()
     d["floor"] = pd.to_numeric(d["floor"], errors="coerce")
-    d = d.dropna(subset=["floor"])
+    d["price_per_sqm"] = pd.to_numeric(d["price_per_sqm"], errors="coerce")
+    d["size_sqm"] = pd.to_numeric(d["size_sqm"], errors="coerce")
+
+    d = d.dropna(subset=["floor", "price_per_sqm", "size_sqm"])
+    d = d[(d["size_sqm"] > 0) & (d["price_per_sqm"] > 0)]
     if d.empty:
-        return pd.DataFrame(columns=["floor", "weighted_price_sqm"])
+        return pd.DataFrame(columns=["floor_bucket", "weighted_price_sqm"])
+
+    # ---- Floor buckets (market reality > per-floor micro-noise)
+    def _bucket(f: float) -> str:
+        try:
+            f = float(f)
+        except Exception:
+            return "Unknown"
+        if f <= 5:
+            return "1–5"
+        if f <= 10:
+            return "6–10"
+        if f <= 20:
+            return "11–20"
+        if f <= 30:
+            return "21–30"
+        if f <= 40:
+            return "31–40"
+        if f <= 50:
+            return "41–50"
+        return "50+"
+
+    d["floor_bucket"] = d["floor"].apply(_bucket)
+
+    order = ["1–5", "6–10", "11–20", "21–30", "31–40", "41–50", "50+"]
+    d["floor_bucket"] = pd.Categorical(d["floor_bucket"], categories=order, ordered=True)
 
     res = (
-        d.groupby("floor", dropna=True)
+        d.groupby("floor_bucket", dropna=True)
         .apply(lambda x: weighted_median(x["price_per_sqm"], x["size_sqm"]))
         .reset_index(name="weighted_price_sqm")
-        .sort_values("floor")
+        .sort_values("floor_bucket")
     )
     return res
-
 
 def price_timeseries_proxy(df: pd.DataFrame, date_col: str = "first_seen") -> pd.DataFrame:
     if date_col not in df.columns or "price_per_sqm" not in df.columns:
