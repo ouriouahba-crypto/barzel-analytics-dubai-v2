@@ -181,7 +181,8 @@ with c1:
     takeaway(f"Yield dispersion of {yield_range:.2f}% reflects different rental market maturities across districts.")
 
 with c2:
-    scatter_df = g.copy().reset_index().rename(columns={"index": "district"})
+    scatter_df = g.copy().reset_index()
+    scatter_df = scatter_df.rename(columns={scatter_df.columns[0]: "district"})
     fig = px.scatter(
         scatter_df,
         x="median_price_sqm",
