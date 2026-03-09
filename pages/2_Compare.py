@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+import plotly.graph_objects as go
 import pandas as pd
 
 from src.app.ui import (
@@ -28,7 +29,6 @@ if g.empty:
     st.info("Not enough data for comparison.")
     st.stop()
 
-# Safety: keep only rows with key metrics available where needed
 g = g.copy()
 
 # ===== COMPARATIVE SUMMARY =====
@@ -100,7 +100,6 @@ for col in display_table.columns:
             lambda x: f"{x:,.0f}" if pd.notna(x) else "n/a"
         )
     elif "%" in col or "Yield" in col or "Quick" in col:
-        # yield is already in percent units in your current logic
         if "Yield" in col:
             display_table[col] = display_table[col].apply(
                 lambda x: f"{x:.2f}" if pd.notna(x) else "n/a"
@@ -237,35 +236,50 @@ with c2:
         scatter_cols.append("n_obs")
 
     scatter_df = scatter_df[scatter_cols].copy()
-    scatter_df = scatter_df.dropna(subset=["median_price_sqm", "net_yield_median"])
-    scatter_df = scatter_df.reset_index(drop=True)
+    scatter_df = scatter_df.dropna(subset=["median_price_sqm", "net_yield_median"]).reset_index(drop=True)
 
     if "n_obs" in scatter_df.columns:
-        fig = px.scatter(
-            scatter_df,
-            x="median_price_sqm",
-            y="net_yield_median",
-            hover_name="district",
-            size="n_obs",
-            title="Price vs. Yield Trade-off"
-        )
+        marker_sizes = scatter_df["n_obs"].fillna(1).astype(float).tolist()
     else:
-        fig = px.scatter(
-            scatter_df,
-            x="median_price_sqm",
-            y="net_yield_median",
-            hover_name="district",
-            title="Price vs. Yield Trade-off"
+        marker_sizes = [12.0] * len(scatter_df)
+
+    sizeref = max(marker_sizes) / 40 if marker_sizes and max(marker_sizes) > 0 else 1
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=scatter_df["median_price_sqm"].astype(float).tolist(),
+            y=scatter_df["net_yield_median"].astype(float).tolist(),
+            mode="markers+text",
+            text=scatter_df["district"].tolist(),
+            textposition="top center",
+            hovertext=scatter_df["district"].tolist(),
+            hovertemplate=(
+                "<b>%{hovertext}</b><br>"
+                "Median Price: %{x:,.0f} AED/sqm<br>"
+                "Net Yield: %{y:.2f}%<extra></extra>"
+            ),
+            marker=dict(
+                size=marker_sizes,
+                sizemode="area",
+                sizeref=sizeref,
+                sizemin=8,
+            ),
+            name="Districts",
         )
+    )
 
     fig.update_layout(
+        title="Price vs. Yield Trade-off",
         xaxis_title="Median Price (AED/sqm)",
-        yaxis_title="Net Yield (%)"
+        yaxis_title="Net Yield (%)",
     )
+
     st.plotly_chart(
         apply_plotly_theme(fig),
         use_container_width=True,
-        config={"displayModeBar": False}
+        config={"displayModeBar": False},
     )
 
     corr_price_yield = g["median_price_sqm"].corr(g["net_yield_median"])
