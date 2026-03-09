@@ -4,7 +4,7 @@ import pandas as pd
 
 from src.app.ui import (
     hero, kpi_card, selection_bar, apply_plotly_theme,
-    section_intro, takeaway, metric_group_label
+    section_intro, takeaway
 )
 from src.analytics.market_views import snapshots_by
 
@@ -16,7 +16,11 @@ if df is None or df.empty or "district" not in df.columns:
     st.stop()
 
 districts = sorted(df["district"].dropna().unique().tolist())
-sel = selection_bar(districts, label="Districts", default=districts[:3] if len(districts) >= 3 else districts)
+sel = selection_bar(
+    districts,
+    label="Districts",
+    default=districts[:3] if len(districts) >= 3 else districts
+)
 view = df[df["district"].isin(sel)] if sel else df
 
 g = snapshots_by(view, "district")
@@ -24,8 +28,14 @@ if g.empty:
     st.info("Not enough data for comparison.")
     st.stop()
 
+# Safety: keep only rows with key metrics available where needed
+g = g.copy()
+
 # ===== COMPARATIVE SUMMARY =====
-section_intro("What Stands Out Across Selected Districts", "Key competitive findings and relative positioning.")
+section_intro(
+    "What Stands Out Across Selected Districts",
+    "Key competitive findings and relative positioning."
+)
 
 most_expensive = g.loc[g["median_price_sqm"].idxmax()]
 most_affordable = g.loc[g["median_price_sqm"].idxmin()]
@@ -53,9 +63,17 @@ with c1:
 with c2:
     kpi_card("Total Market Size", f"{int(g['n_obs'].sum()):,}", "Active listings")
 with c3:
-    kpi_card("Price Premium Spread", f"{((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm']) - 1):.0%}", "High vs Low")
+    kpi_card(
+        "Price Premium Spread",
+        f"{((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm']) - 1):.0%}",
+        "High vs Low"
+    )
 with c4:
-    kpi_card("Liquidity Range", f"{int(g['median_dom'].max() - g['median_dom'].min())} days", "Max - Min DOM")
+    kpi_card(
+        "Liquidity Range",
+        f"{int(g['median_dom'].max() - g['median_dom'].min())} days",
+        "Max - Min DOM"
+    )
 
 st.divider()
 
@@ -78,13 +96,27 @@ display_table.columns = [display_cols.get(col, col) for col in display_table.col
 
 for col in display_table.columns:
     if "AED" in col or "Price" in col or "Service" in col:
-        display_table[col] = display_table[col].apply(lambda x: f"{x:,.0f}" if pd.notna(x) else "n/a")
+        display_table[col] = display_table[col].apply(
+            lambda x: f"{x:,.0f}" if pd.notna(x) else "n/a"
+        )
     elif "%" in col or "Yield" in col or "Quick" in col:
-        display_table[col] = display_table[col].apply(lambda x: f"{x:.1%}" if pd.notna(x) else "n/a")
+        # yield is already in percent units in your current logic
+        if "Yield" in col:
+            display_table[col] = display_table[col].apply(
+                lambda x: f"{x:.2f}" if pd.notna(x) else "n/a"
+            )
+        else:
+            display_table[col] = display_table[col].apply(
+                lambda x: f"{x:.1%}" if pd.notna(x) else "n/a"
+            )
     elif "CV" in col or "Variation" in col:
-        display_table[col] = display_table[col].apply(lambda x: f"{x:.3f}" if pd.notna(x) else "n/a")
+        display_table[col] = display_table[col].apply(
+            lambda x: f"{x:.3f}" if pd.notna(x) else "n/a"
+        )
     elif "DOM" in col:
-        display_table[col] = display_table[col].apply(lambda x: f"{int(x)}" if pd.notna(x) else "n/a")
+        display_table[col] = display_table[col].apply(
+            lambda x: f"{int(x)}" if pd.notna(x) else "n/a"
+        )
 
 st.dataframe(display_table, use_container_width=True)
 
@@ -95,15 +127,18 @@ section_intro("Pricing Landscape", "Median AED/sqm across districts reveals mark
 c1, c2 = st.columns(2)
 
 with c1:
-    sorted_price = g.sort_values("median_price_sqm", ascending=False)
+    sorted_price = g.sort_values("median_price_sqm", ascending=False).copy()
+    sorted_price["district"] = sorted_price.index.astype(str)
+
     fig = px.bar(
         sorted_price,
-        x=sorted_price.index,
+        x="district",
         y="median_price_sqm",
         title="Median Price by District (Ranked)"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="Median AED per sqm")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+
     price_spread = (g["median_price_sqm"].max() - g["median_price_sqm"].min()) / g["median_price_sqm"].mean()
     takeaway(
         f"Price variance (±{price_spread:.0%} of mean) suggests "
@@ -111,15 +146,17 @@ with c1:
     )
 
 with c2:
+    box_df = view.dropna(subset=["district", "price_per_sqm"]).copy()
     fig = px.box(
-        view.dropna(subset=["district", "price_per_sqm"]),
+        box_df,
         x="district",
         y="price_per_sqm",
         title="Pricing Distribution by District (Box Plot)"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="AED per sqm")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
-    district_std_mean = view.groupby("district")["price_per_sqm"].std().mean()
+
+    district_std_mean = box_df.groupby("district")["price_per_sqm"].std().mean()
     takeaway(
         f"Outlier presence and box heights indicate "
         f"{'uniform' if district_std_mean < 500 else 'heterogeneous'} pricing discipline within each district."
@@ -132,29 +169,37 @@ section_intro("Market Liquidity & Exit Dynamics", "Days-on-market reveals relati
 c1, c2 = st.columns(2)
 
 with c1:
-    sorted_dom = g.sort_values("median_dom")
+    sorted_dom = g.sort_values("median_dom").copy()
+    sorted_dom["district"] = sorted_dom.index.astype(str)
+
     fig = px.bar(
         sorted_dom,
-        x=sorted_dom.index,
+        x="district",
         y="median_dom",
         title="Median Time-to-Exit by District"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="Days on Market")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+
     fastest = g["median_dom"].min()
     slowest = g["median_dom"].max()
-    takeaway(f"Liquidity delta: {int(slowest - fastest)} days between fastest ({int(fastest)}d) and slowest ({int(slowest)}d) markets.")
+    takeaway(
+        f"Liquidity delta: {int(slowest - fastest)} days between fastest ({int(fastest)}d) and slowest ({int(slowest)}d) markets."
+    )
 
 with c2:
-    sorted_fast_sales = g.sort_values("fast_sale_ratio_30d", ascending=False)
+    sorted_fast_sales = g.sort_values("fast_sale_ratio_30d", ascending=False).copy()
+    sorted_fast_sales["district"] = sorted_fast_sales.index.astype(str)
+
     fig = px.bar(
         sorted_fast_sales,
-        x=sorted_fast_sales.index,
+        x="district",
         y="fast_sale_ratio_30d",
         title="Quick Sales (≤30 days) by District"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="% of Units")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+
     avg_quick_ratio = g["fast_sale_ratio_30d"].mean()
     takeaway(
         f"Average quick-sale ratio: {avg_quick_ratio:.0%}. Districts above this threshold show "
@@ -168,31 +213,61 @@ section_intro("Income Return Profile", "Net yields reflect rental market dynamic
 c1, c2 = st.columns(2)
 
 with c1:
-    sorted_yield = g.sort_values("net_yield_median", ascending=False)
+    sorted_yield = g.sort_values("net_yield_median", ascending=False).copy()
+    sorted_yield["district"] = sorted_yield.index.astype(str)
+
     fig = px.bar(
         sorted_yield,
-        x=sorted_yield.index,
+        x="district",
         y="net_yield_median",
         title="Median Net Yield by District"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="Net Yield (%)")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+
     yield_range = g["net_yield_median"].max() - g["net_yield_median"].min()
     takeaway(f"Yield dispersion of {yield_range:.2f}% reflects different rental market maturities across districts.")
 
 with c2:
-    scatter_df = g.copy().reset_index()
-    scatter_df = scatter_df.rename(columns={scatter_df.columns[0]: "district"})
-    fig = px.scatter(
-        scatter_df,
-        x="median_price_sqm",
-        y="net_yield_median",
-        hover_name="district",
-        size="n_obs",
-        title="Price vs. Yield Trade-off"
+    scatter_df = g.copy()
+    scatter_df["district"] = scatter_df.index.astype(str)
+
+    scatter_cols = ["district", "median_price_sqm", "net_yield_median"]
+    if "n_obs" in scatter_df.columns:
+        scatter_cols.append("n_obs")
+
+    scatter_df = scatter_df[scatter_cols].copy()
+    scatter_df = scatter_df.dropna(subset=["median_price_sqm", "net_yield_median"])
+    scatter_df = scatter_df.reset_index(drop=True)
+
+    if "n_obs" in scatter_df.columns:
+        fig = px.scatter(
+            scatter_df,
+            x="median_price_sqm",
+            y="net_yield_median",
+            hover_name="district",
+            size="n_obs",
+            title="Price vs. Yield Trade-off"
+        )
+    else:
+        fig = px.scatter(
+            scatter_df,
+            x="median_price_sqm",
+            y="net_yield_median",
+            hover_name="district",
+            title="Price vs. Yield Trade-off"
+        )
+
+    fig.update_layout(
+        xaxis_title="Median Price (AED/sqm)",
+        yaxis_title="Net Yield (%)"
     )
-    fig.update_layout(xaxis_title="Median Price (AED/sqm)", yaxis_title="Net Yield (%)")
-    st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(
+        apply_plotly_theme(fig),
+        use_container_width=True,
+        config={"displayModeBar": False}
+    )
+
     corr_price_yield = g["median_price_sqm"].corr(g["net_yield_median"])
     takeaway(
         f"Price-yield correlation ({corr_price_yield:.2f}) indicates "
@@ -206,30 +281,42 @@ section_intro("Cost Efficiency Analysis", "Service charges and maintenance costs
 c1, c2 = st.columns(2)
 
 with c1:
-    sorted_costs = g.sort_values("service_charge_median")
+    sorted_costs = g.sort_values("service_charge_median").copy()
+    sorted_costs["district"] = sorted_costs.index.astype(str)
+
     fig = px.bar(
         sorted_costs,
-        x=sorted_costs.index,
+        x="district",
         y="service_charge_median",
         title="Annual Service Charge by District"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="AED/sqm/year")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+
     cost_range = (g["service_charge_median"].max() - g["service_charge_median"].min()) / g["service_charge_median"].mean()
-    takeaway(f"Cost variance spans ±{cost_range:.0%} of mean, suggesting different asset maintenance standards across markets.")
+    takeaway(
+        f"Cost variance spans ±{cost_range:.0%} of mean, suggesting different asset maintenance standards across markets."
+    )
 
 with c2:
     g_temp = g.copy()
-    g_temp["cost_to_yield"] = (g_temp["service_charge_median"] / (g_temp["net_yield_median"] * g_temp["median_price_sqm"] / 100)).fillna(0)
+    g_temp["cost_to_yield"] = (
+        g_temp["service_charge_median"] /
+        (g_temp["net_yield_median"] * g_temp["median_price_sqm"] / 100)
+    ).fillna(0)
+    g_temp["district"] = g_temp.index.astype(str)
+
     sorted_burden = g_temp.sort_values("cost_to_yield")
+
     fig = px.bar(
         sorted_burden,
-        x=sorted_burden.index,
+        x="district",
         y="cost_to_yield",
         title="Cost Burden (Service Charge / Annual Yield)"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="Cost Ratio")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+
     takeaway("Ratio indicates what share of annual yield is consumed by operating costs. Lower ratios mean less friction on returns.")
 
 st.divider()
@@ -265,6 +352,8 @@ if "bedrooms" in view.columns and "price_per_sqm" in view.columns:
 
         if slopes:
             most_differentiated = max(slopes, key=slopes.get)
-            takeaway(f"{most_differentiated} shows the steepest price-by-type curve, indicating stronger buyer segmentation by product size.")
+            takeaway(
+                f"{most_differentiated} shows the steepest price-by-type curve, indicating stronger buyer segmentation by product size."
+            )
     else:
         st.info("Insufficient typology data for product mix analysis.")
