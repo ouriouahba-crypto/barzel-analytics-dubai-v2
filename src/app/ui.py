@@ -39,23 +39,30 @@ def inject_lovable_skin():
         [data-testid="stStatusWidget"] {visibility: hidden;}
         [data-testid="stDecoration"] {display: none;}
 
+<<<<<<< HEAD
         /* Page background - light institutional */
         .stApp, [data-testid="stAppViewContainer"] {
             background-color: #f8f9fb;
         }
 
+=======
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
         /* Layout */
         .block-container {
             padding-top: 1.2rem;
             padding-bottom: 2.0rem;
             max-width: 1440px;
+<<<<<<< HEAD
             background-color: #f8f9fb;
+=======
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
         }
 
         html, body, [class*="css"] {
             font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
         }
 
+<<<<<<< HEAD
         /* Cards - white with soft shadow */
         .ba-card {
             background: #ffffff;
@@ -74,23 +81,54 @@ def inject_lovable_skin():
             letter-spacing: 0.05em;
             text-transform: uppercase;
             color: #6b7280;
+=======
+        /* Cards */
+        .ba-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 18px;
+            padding: 16px 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+        }
+        .ba-card:hover {
+            border-color: rgba(0,229,168,0.22);
+            box-shadow: 0 14px 48px rgba(0,0,0,0.32);
+        }
+
+        .ba-title {
+            font-size: 12px;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            color: rgba(229,231,235,0.70);
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             margin-bottom: 8px;
         }
         .ba-value {
             font-size: 26px;
+<<<<<<< HEAD
             font-weight: 700;
             letter-spacing: -0.02em;
             color: #1f2937;
+=======
+            font-weight: 780;
+            letter-spacing: -0.02em;
+            color: rgba(229,231,235,0.95);
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             line-height: 1.1;
         }
         .ba-sub {
             margin-top: 6px;
             font-size: 12px;
+<<<<<<< HEAD
             color: #9ca3af;
+=======
+            color: rgba(229,231,235,0.62);
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
         }
 
         /* Buttons (pills) */
         .stButton>button {
+<<<<<<< HEAD
             border-radius: 8px;
             border: 1px solid #d1d5db;
             background: #ffffff;
@@ -103,6 +141,18 @@ def inject_lovable_skin():
             border-color: #2563eb;
             background: #f3f4f6;
             color: #2563eb;
+=======
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: rgba(255,255,255,0.06);
+            color: rgba(229,231,235,0.92);
+            padding: 0.55rem 0.9rem;
+            transition: all 120ms ease;
+        }
+        .stButton>button:hover {
+            border-color: rgba(0,229,168,0.30);
+            background: rgba(0,229,168,0.10);
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             transform: translateY(-1px);
         }
 
@@ -116,28 +166,45 @@ def inject_lovable_skin():
         }
         div[role="radiogroup"] {
             flex-wrap: nowrap !important;
+<<<<<<< HEAD
             gap: 6px !important;
         }
         div[role="radiogroup"] > label {
             border-radius: 8px !important;
             border: 1px solid #d1d5db !important;
             background: #ffffff !important;
+=======
+            gap: 4px !important;
+        }
+        div[role="radiogroup"] > label {
+            border-radius: 999px !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            background: rgba(255,255,255,0.04) !important;
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             padding: 0.5rem 1rem !important;
             margin: 0 !important;
             font-size: 13px !important;
             transition: all 120ms ease !important;
             cursor: pointer !important;
             white-space: nowrap !important;
+<<<<<<< HEAD
             color: #1f2937 !important;
         }
         div[role="radiogroup"] > label:hover {
             border-color: #2563eb !important;
             background: #f0f4ff !important;
+=======
+        }
+        div[role="radiogroup"] > label:hover {
+            border-color: rgba(0,229,168,0.30) !important;
+            background: rgba(0,229,168,0.08) !important;
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
         }
         div[role="radiogroup"] > label > span:first-child {
             display: none !important;
         }
         div[role="radiogroup"] > label > span:last-child {
+<<<<<<< HEAD
             color: #1f2937 !important;
         }
         div[role="radiogroup"] > label:has(input:checked) {
@@ -147,19 +214,38 @@ def inject_lovable_skin():
         }
         div[role="radiogroup"] > label:has(input:checked) > span:last-child {
             color: #2563eb !important;
+=======
+            color: rgba(229,231,235,0.92) !important;
+        }
+        .stRadio [role="radio"][aria-checked="true"] + span,
+        .stRadio > label:has(input:checked) {
+            border-color: rgba(0,229,168,0.50) !important;
+            background: rgba(0,229,168,0.15) !important;
+            color: rgba(0,229,168,0.95) !important;
+        }
+        .stRadio > label:has(input:checked) > span:last-child {
+            color: rgba(0,229,168,0.95) !important;
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             font-weight: 600 !important;
         }
 
         /* Tables */
         .stDataFrame, [data-testid="stDataFrame"] {
+<<<<<<< HEAD
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #e5e7eb;
+=======
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.09);
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
         }
 
         /* Dividers */
         hr {
             border: none;
+<<<<<<< HEAD
             border-top: 1px solid #e5e7eb;
             margin: 1.2rem 0;
         }
@@ -169,17 +255,35 @@ def inject_lovable_skin():
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
+=======
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin: 1.2rem 0;
+        }
+
+        /* Selection bar (premium container) */
+        .ba-selection-bar {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             padding: 12px 16px;
             margin-bottom: 1.4rem;
         }
 
+<<<<<<< HEAD
         /* Coverage line */
         .ba-coverage {
             color: #6b7280;
+=======
+        /* Coverage line (premium caption) */
+        .ba-coverage {
+            color: rgba(229,231,235,0.65);
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             font-size: 13px;
             letter-spacing: 0.01em;
             margin: 0.8rem 0 1.2rem 0;
         }
+<<<<<<< HEAD
 
         /* Institutional text styles for new helpers */
         .ba-section-intro {
@@ -265,6 +369,8 @@ def inject_lovable_skin():
         .ba-exec-summary-points li:last-child {
             margin-bottom: 0;
         }
+=======
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
         </style>
         """,
         unsafe_allow_html=True,
@@ -276,11 +382,16 @@ def hero(title: str, subtitle: str):
         f"""
         <div style="
             padding: 0.9rem 0 1.1rem 0;
+<<<<<<< HEAD
             border-bottom: 1px solid #e5e7eb;
+=======
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             margin-bottom: 1.2rem;
         ">
           <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
             <div>
+<<<<<<< HEAD
               <h1 style="margin:0;letter-spacing:-0.03em;font-size:2.1rem;color:#1f2937;">{title}</h1>
               <p style="color:#6b7280;margin:0.35rem 0 0 0;font-size:1.05rem;max-width:860px;">
                 {subtitle}
@@ -288,6 +399,15 @@ def hero(title: str, subtitle: str):
             </div>
             <div style="text-align:right;color:#9ca3af;font-size:12px;padding-bottom:6px;">
               Dubai • Real Estate Analytics
+=======
+              <h1 style="margin:0;letter-spacing:-0.03em;font-size:2.1rem;">{title}</h1>
+              <p style="color:rgba(229,231,235,0.62);margin:0.35rem 0 0 0;font-size:1.05rem;max-width:860px;">
+                {subtitle}
+              </p>
+            </div>
+            <div style="text-align:right;color:rgba(229,231,235,0.45);font-size:12px;padding-bottom:6px;">
+              Dubai V2 • Analytical Cockpit
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             </div>
           </div>
         </div>
@@ -315,8 +435,13 @@ def top_nav(active: str, items: list[str]) -> str:
     
     with col1:
         st.markdown(
+<<<<<<< HEAD
             "<div style='font-weight:900;letter-spacing:-0.03em;font-size:18px;padding-top:10px;color:#1f2937;'>Barzel Analytics</div>"
             "<div style='color:#9ca3af;font-size:12px;margin-top:-2px;'>Dubai</div>",
+=======
+            "<div style='font-weight:900;letter-spacing:-0.03em;font-size:18px;padding-top:10px;'>Barzel Analytics</div>"
+            "<div style='color:rgba(229,231,235,0.55);font-size:12px;margin-top:-2px;'>Dubai</div>",
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             unsafe_allow_html=True,
         )
     
@@ -331,8 +456,13 @@ def top_nav(active: str, items: list[str]) -> str:
     
     with col2:
         st.markdown(
+<<<<<<< HEAD
             "<div style='text-align:right;color:#9ca3af;font-size:12px;padding-top:10px;'>"
             "<strong>Real Estate Analytics</strong></div>",
+=======
+            "<div style='text-align:right;color:rgba(229,231,235,0.55);font-size:12px;padding-top:10px;'>"
+            "<strong>Institutional Suite</strong></div>",
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
             unsafe_allow_html=True,
         )
     
@@ -346,7 +476,11 @@ def selection_bar(options: list, label: str = "Districts", default: list = None,
     
     col1, col2 = st.columns([0.4, 3], gap="small")
     with col1:
+<<<<<<< HEAD
         st.markdown("<span style='font-size:13px;color:#1f2937;font-weight:600;'>" + label + "</span>", unsafe_allow_html=True)
+=======
+        st.markdown("<span style='font-size:13px;color:rgba(229,231,235,0.75);font-weight:600;'>" + label + "</span>", unsafe_allow_html=True)
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
     
     with col2:
         if default is None:
@@ -398,6 +532,7 @@ def render_plotly_chart(fig, use_container_width: bool = True):
 
 
 def apply_plotly_theme(fig):
+<<<<<<< HEAD
     """Apply light institutional theme to Plotly figures."""
     fig.update_layout(
         paper_bgcolor="#ffffff",
@@ -465,3 +600,16 @@ def metric_group_label(text: str):
     """Render a label for grouped metrics."""
     html = f'<div class="ba-metric-group-label">{text}</div>'
     st.markdown(html, unsafe_allow_html=True)
+=======
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color="rgba(229,231,235,0.92)",
+        title_font_size=16,
+        margin=dict(l=10, r=10, t=55, b=10),
+        legend=dict(font=dict(color="rgba(229,231,235,0.80)")),
+    )
+    fig.update_xaxes(gridcolor="rgba(255,255,255,0.06)", zerolinecolor="rgba(255,255,255,0.08)")
+    fig.update_yaxes(gridcolor="rgba(255,255,255,0.06)", zerolinecolor="rgba(255,255,255,0.08)")
+    return fig
+>>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
