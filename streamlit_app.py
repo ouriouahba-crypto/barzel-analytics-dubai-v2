@@ -24,13 +24,8 @@ df = st.session_state["df"]
 inject_lovable_skin()
 
 hero(
-<<<<<<< HEAD
     "Barzel Analytics — Dubai",
     "Interactive real estate market intelligence platform. Deep analysis to support investment decisions.",
-=======
-    "Barzel Analytics — Dubai (V2)",
-    "Institutional analytical cockpit. Premium analytics for funds and family offices.",
->>>>>>> 7fcda6c0f7c08b5b451e4097656adc1d00ea17bb
 )
 
 # Navigation with premium labels (simplified to 4 main pages)
