@@ -1,18 +1,20 @@
 import streamlit as st
 import plotly.express as px
 
-from src.app.ui import hero, kpi_card, selection_bar, apply_plotly_theme
+from src.app.ui import hero, kpi_card, selection_bar, apply_plotly_theme, section_intro, chart_explanation
+from src.app.translations import get_text
 from src.analytics.kpi_engine import floor_weighted_price
 
+lang = st.session_state.get("language", "en")
 
-hero("Map & Micro", "Geospatial and micro-level market insights.")
+hero(get_text("map_title", lang), get_text("map_subtitle", lang))
 
 df = st.session_state.get("df")
 if df is None or df.empty:
     st.stop()
 
 districts = sorted(df["district"].dropna().unique().tolist()) if "district" in df.columns else []
-sel = selection_bar(districts, label="Districts", default=districts[:3] if len(districts) >= 3 else districts)
+sel = selection_bar(districts, label=get_text("label_districts", lang), default=districts[:3] if len(districts) >= 3 else districts)
 view = df[df["district"].isin(sel)] if sel else df
 
 # Top cards
@@ -43,6 +45,9 @@ with c4:
 st.markdown("")
 
 # Map
+section_intro("Geospatial Distribution", "Interactive map view of all listed properties in the selected districts.")
+chart_explanation("This map visualizes the geographic spread of your market inventory, color-coded by price per square meter. Clustering patterns reveal submarkets and premium location concentrations.")
+
 need = ["latitude", "longitude"]
 if not all(c in view.columns for c in need):
     st.error("Missing latitude and longitude columns.")
@@ -64,15 +69,16 @@ fig = px.scatter_mapbox(
     hover_data=hover_cols,
     zoom=11,
     height=560,
-    title="Market Map (colored by AED/sqm)",
+    title="Market Distribution Map",
 )
-fig.update_layout(mapbox_style="carto-darkmatter", margin=dict(l=0, r=0, t=55, b=0))
+fig.update_layout(mapbox_style="carto-positron", margin=dict(l=0, r=0, t=55, b=0))
 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 st.markdown("")
 
 # Floor premium (weighted)
-st.subheader("Floor Premium Analysis")
+section_intro("Floor Premium Analysis", "How price varies across floor levels in high-rise buildings.")
+chart_explanation("This line chart shows weighted average prices by floor band, revealing whether upper floors command premiums due to views, amenities, and prestige.")
 fp = floor_weighted_price(view)
 if fp.empty:
     st.info("Insufficient data for floor premium analysis.")
@@ -91,7 +97,7 @@ st.markdown("")
 
 # Building-level micro table
 if "building_name" in view.columns:
-    st.subheader("Top Buildings")
+    section_intro("Top Buildings by Listing Density", "Buildings with the most active listings in the selected market.")
     b = view.groupby("building_name", dropna=True).size().reset_index(name="Listings")
     b = b.sort_values("Listings", ascending=False).head(20)
     st.dataframe(b, use_container_width=True)

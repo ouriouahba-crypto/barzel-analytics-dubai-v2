@@ -5,12 +5,14 @@ import pandas as pd
 
 from src.app.ui import (
     hero, kpi_card, selection_bar, apply_plotly_theme,
-    section_intro, takeaway
+    section_intro, takeaway, chart_explanation, premium_insight
 )
+from src.app.translations import get_text
 from src.analytics.market_views import snapshots_by
 
+lang = st.session_state.get("language", "en")
 
-hero("Compare", "Side-by-side cross-district analysis and competitive positioning.")
+hero(get_text("compare_title", lang), get_text("compare_subtitle", lang))
 
 df = st.session_state.get("df")
 if df is None or df.empty or "district" not in df.columns:
@@ -19,7 +21,7 @@ if df is None or df.empty or "district" not in df.columns:
 districts = sorted(df["district"].dropna().unique().tolist())
 sel = selection_bar(
     districts,
-    label="Districts",
+    label=get_text("label_districts", lang),
     default=districts[:3] if len(districts) >= 3 else districts
 )
 view = df[df["district"].isin(sel)] if sel else df
@@ -33,8 +35,8 @@ g = g.copy()
 
 # ===== COMPARATIVE SUMMARY =====
 section_intro(
-    "What Stands Out Across Selected Districts",
-    "Key competitive findings and relative positioning."
+    get_text("compare_intro_title", lang),
+    get_text("compare_intro_subtitle", lang)
 )
 
 most_expensive = g.loc[g["median_price_sqm"].idxmax()]
@@ -123,6 +125,7 @@ st.divider()
 
 # ===== PRICING COMPARISON =====
 section_intro("Pricing Landscape", "Median AED/sqm across districts reveals market segmentation.")
+chart_explanation("These visualizations compare asking prices across your selected districts. The bar chart ranks districts from most to least expensive, while the box plot reveals price distribution spread and outliers within each market.")
 c1, c2 = st.columns(2)
 
 with c1:
@@ -139,10 +142,8 @@ with c1:
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
     price_spread = (g["median_price_sqm"].max() - g["median_price_sqm"].min()) / g["median_price_sqm"].mean()
-    takeaway(
-        f"Price variance (±{price_spread:.0%} of mean) suggests "
-        f"{'distinct market segments' if price_spread > 0.20 else 'relatively homogeneous pricing'} across districts."
-    )
+    market_structure = "distinct market segments with clear tier stratification" if price_spread > 0.20 else "relatively homogeneous pricing across districts"
+    premium_insight(f"Market structure: Price variance of ±{price_spread:.0%} indicates {market_structure}.", "📊")
 
 with c2:
     box_df = view.dropna(subset=["district", "price_per_sqm"]).copy()
@@ -150,21 +151,20 @@ with c2:
         box_df,
         x="district",
         y="price_per_sqm",
-        title="Pricing Distribution by District (Box Plot)"
+        title="Pricing Distribution by District"
     )
     fig.update_layout(xaxis_title="District", yaxis_title="AED per sqm")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
     district_std_mean = box_df.groupby("district")["price_per_sqm"].std().mean()
-    takeaway(
-        f"Outlier presence and box heights indicate "
-        f"{'uniform' if district_std_mean < 500 else 'heterogeneous'} pricing discipline within each district."
-    )
+    discipline = "tight pricing discipline with minimal outliers" if district_std_mean < 500 else "significant price heterogeneity suggesting diverse product mix or quality variance"
+    premium_insight(f"Price discipline: Districts show {discipline}.", "🎯")
 
 st.divider()
 
 # ===== LIQUIDITY COMPARISON =====
 section_intro("Market Liquidity & Exit Dynamics", "Days-on-market reveals relative market depth and absorption capacity.")
+chart_explanation("These charts compare absorption speed across districts. Faster exits (shorter DOM) indicate stronger buyer demand or better-priced inventory. The quick-sales percentage shows the proportion of units selling within 30 days.")
 c1, c2 = st.columns(2)
 
 with c1:
@@ -182,9 +182,8 @@ with c1:
 
     fastest = g["median_dom"].min()
     slowest = g["median_dom"].max()
-    takeaway(
-        f"Liquidity delta: {int(slowest - fastest)} days between fastest ({int(fastest)}d) and slowest ({int(slowest)}d) markets."
-    )
+    liquidity_delta = int(slowest - fastest)
+    premium_insight(f"Liquidity variance: {liquidity_delta}-day range between most ({int(fastest)}d) and least liquid ({int(slowest)}d) markets.", "⚡")
 
 with c2:
     sorted_fast_sales = g.sort_values("fast_sale_ratio_30d", ascending=False).copy()
@@ -200,15 +199,14 @@ with c2:
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
     avg_quick_ratio = g["fast_sale_ratio_30d"].mean()
-    takeaway(
-        f"Average quick-sale ratio: {avg_quick_ratio:.0%}. Districts above this threshold show "
-        f"{'stronger' if avg_quick_ratio > 0.20 else 'moderate'} buyer momentum."
-    )
+    momentum = "strong buyer momentum and efficient absorption" if avg_quick_ratio > 0.25 else "moderate market pull with selective demand"
+    premium_insight(f"Quick-sale dynamics: {avg_quick_ratio:.0%} portfolio average indicates {momentum}.", "📈")
 
 st.divider()
 
 # ===== YIELD COMPARISON =====
 section_intro("Income Return Profile", "Net yields reflect rental market dynamics relative to acquisition prices.")
+chart_explanation("These visualizations compare income returns across districts. Higher yields indicate stronger rental markets relative to property prices, while the scatter plot reveals the price-yield tradeoff: premium locations often command lower yields due to higher acquisition costs.")
 c1, c2 = st.columns(2)
 
 with c1:
@@ -225,7 +223,8 @@ with c1:
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
     yield_range = g["net_yield_median"].max() - g["net_yield_median"].min()
-    takeaway(f"Yield dispersion of {yield_range:.2f}% reflects different rental market maturities across districts.")
+    yield_spread = yield_range / g["net_yield_median"].mean()
+    premium_insight(f"Yield dispersion: {yield_range:.2f}% absolute range (±{yield_spread:.0%} relative) across districts indicates differentiated income dynamics.", "💰")
 
 with c2:
     scatter_df = g.copy()
@@ -283,15 +282,19 @@ with c2:
     )
 
     corr_price_yield = g["median_price_sqm"].corr(g["net_yield_median"])
-    takeaway(
-        f"Price-yield correlation ({corr_price_yield:.2f}) indicates "
-        f"{'an inverse' if corr_price_yield < -0.3 else 'a weak'} relationship between pricing and income return."
-    )
+    if corr_price_yield < -0.3:
+        insight = "strong inverse relationship — premium pricing typically commands lower yields"
+    elif corr_price_yield > 0.2:
+        insight = "positive relationship — higher-priced districts also offer better returns"
+    else:
+        insight = "weak or no relationship — price and yield move independently"
+    premium_insight(f"Price-yield dynamics: {corr_price_yield:+.2f} correlation signals {insight}.", "🔗")
 
 st.divider()
 
 # ===== OPERATING COSTS COMPARISON =====
 section_intro("Cost Efficiency Analysis", "Service charges and maintenance costs impact net investor returns.")
+chart_explanation("These charts compare operating costs (service charges) across districts and measure their burden relative to rental yields. Higher cost-to-yield ratios reduce net returns, making cost efficiency a key investment consideration.")
 c1, c2 = st.columns(2)
 
 with c1:
@@ -308,9 +311,7 @@ with c1:
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
     cost_range = (g["service_charge_median"].max() - g["service_charge_median"].min()) / g["service_charge_median"].mean()
-    takeaway(
-        f"Cost variance spans ±{cost_range:.0%} of mean, suggesting different asset maintenance standards across markets."
-    )
+    premium_insight(f"Cost variance: ±{cost_range:.0%} of mean indicates different asset maintenance standards and building age profiles across districts.", "🏗️")
 
 with c2:
     g_temp = g.copy()
@@ -331,12 +332,13 @@ with c2:
     fig.update_layout(xaxis_title="District", yaxis_title="Cost Ratio")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
-    takeaway("Ratio indicates what share of annual yield is consumed by operating costs. Lower ratios mean less friction on returns.")
+    premium_insight("The cost-to-yield ratio shows what fraction of annual rental income is consumed by operating costs. Lower ratios preserve more cash flow for investors.", "💼")
 
 st.divider()
 
 # ===== PRODUCT MIX COMPARISON =====
 section_intro("Product Type Pricing", "How different property types (bedrooms) command premia across districts.")
+chart_explanation("This line chart shows how median pricing varies by bedroom count across your selected districts. Steeper slopes indicate stronger buyer segmentation by product size.")
 if "bedrooms" in view.columns and "price_per_sqm" in view.columns:
     d = view.dropna(subset=["district", "bedrooms", "price_per_sqm"]).copy()
     if len(d) >= 30:
@@ -366,8 +368,8 @@ if "bedrooms" in view.columns and "price_per_sqm" in view.columns:
 
         if slopes:
             most_differentiated = max(slopes, key=slopes.get)
-            takeaway(
-                f"{most_differentiated} shows the steepest price-by-type curve, indicating stronger buyer segmentation by product size."
-            )
+            least_differentiated = min(slopes, key=slopes.get)
+            avg_slope = sum(slopes.values()) / len(slopes) if slopes else 0
+            premium_insight(f"Product segmentation: {most_differentiated} shows steepest price-by-type curve, suggesting strongest buyer differentiation. Flatter curves indicate commodity pricing.", "📏")
     else:
         st.info("Insufficient typology data for product mix analysis.")

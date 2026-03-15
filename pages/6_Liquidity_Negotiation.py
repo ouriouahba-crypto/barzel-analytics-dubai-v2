@@ -1,10 +1,12 @@
 import streamlit as st
 import plotly.express as px
 
-from src.app.ui import hero, kpi_card, apply_plotly_theme
+from src.app.ui import hero, kpi_card, apply_plotly_theme, section_intro, chart_explanation
+from src.app.translations import get_text
 
+lang = st.session_state.get("language", "en")
 
-hero("Liquidity", "Time-to-exit, depth & pricing discipline (descriptive only).")
+hero(get_text("liquidity_title", lang), get_text("liquidity_subtitle", lang))
 
 df = st.session_state.get("df")
 if df is None or df.empty:
@@ -32,13 +34,17 @@ with c4: kpi_card("Fast-sale ≤30d", f"{(d['days_on_market'] <= 30).mean():.0%}
 st.divider()
 
 # DOM distribution
+section_intro("Time-to-Exit Distribution", "Understanding absorption speed and market liquidity.")
+chart_explanation("This histogram shows the distribution of days-on-market for all listed properties. Left-skewed distributions indicate fast absorption; right-skewed patterns suggest slower market conditions.")
 fig = px.histogram(d, x="days_on_market", nbins=45, title="Distribution: Days on Market")
-fig.update_layout(xaxis_title="Days on Market", yaxis_title="Count")
+fig.update_layout(xaxis_title="Days on Market", yaxis_title="Listing Count")
 st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)
 
 st.divider()
 
 # Price vs DOM scatter
+section_intro("Pricing Discipline & Liquidity", "Relationship between asking price and time-to-exit.")
+chart_explanation("This scatter plot reveals pricing efficiency. Negatively correlated patterns indicate disciplined pricing — overpriced units linger. Positively correlated or scattered patterns may signal market inefficiency or product heterogeneity.")
 s = view.dropna(subset=["price_per_sqm", "days_on_market"]).copy()
 if len(s) >= 40:
     fig = px.scatter(
@@ -47,7 +53,7 @@ if len(s) >= 40:
         y="days_on_market",
         color="district" if "district" in s.columns else None,
         opacity=0.55,
-        title="Scatter: AED/sqm vs Days on Market (pricing discipline)",
+        title="Price vs. Market Exit Speed",
         hover_data=[c for c in ["building_name", "bedrooms", "size_sqm"] if c in s.columns],
     )
     fig.update_layout(xaxis_title="AED per sqm", yaxis_title="Days on Market")
@@ -57,11 +63,11 @@ st.divider()
 
 # Fast-sale table by district
 if "district" in view.columns:
+    section_intro("District Liquidity Benchmark", "Comparative absorption metrics by market.")
     t = view.dropna(subset=["days_on_market"]).groupby("district")["days_on_market"].agg(
         n="count",
         median="median",
         fast_30=lambda x: (x <= 30).mean(),
         fast_60=lambda x: (x <= 60).mean(),
     ).reset_index()
-    st.subheader("District liquidity table")
     st.dataframe(t.sort_values("n", ascending=False), use_container_width=True)

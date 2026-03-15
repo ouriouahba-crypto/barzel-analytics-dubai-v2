@@ -4,13 +4,17 @@ import pandas as pd
 
 from src.app.ui import (
     hero, kpi_card, selection_bar, apply_plotly_theme,
-    executive_summary, section_intro, takeaway, metric_group_label
+    executive_summary, section_intro, takeaway, metric_group_label,
+    chart_explanation, premium_insight
 )
+from src.app.translations import get_text
 from src.analytics.market_views import snapshot, snapshots_by
 from src.analytics.kpi_engine import floor_weighted_price, price_timeseries_proxy
 from src.analytics.advanced_kpis import typology_concentration, terrace_premium
 
-hero("Executive Snapshot", "Market overview with key pricing, liquidity, and income indicators.")
+lang = st.session_state.get("language", "en")
+
+hero(get_text("exec_snapshot_title", lang), get_text("exec_snapshot_subtitle", lang))
 
 df = st.session_state.get("df")
 if df is None or df.empty:
@@ -18,7 +22,7 @@ if df is None or df.empty:
 
 # Selection bar (premium pattern)
 districts = sorted(df["district"].dropna().unique().tolist()) if "district" in df.columns else []
-sel = selection_bar(districts, label="Districts", default=districts[:3] if len(districts) >= 3 else districts)
+sel = selection_bar(districts, label=get_text("label_districts", lang), default=districts[:3] if len(districts) >= 3 else districts)
 view = df[df["district"].isin(sel)] if sel else df
 
 snap = snapshot(view)
@@ -73,29 +77,34 @@ with c2: kpi_card("Service Charge Impact", f"{((snap['service_charge_median'] / 
 st.divider()
 
 # ===== PRICING ANALYSIS =====
-section_intro("Pricing Distribution Analysis", "Understanding the breadth of pricing across the market.")
+section_intro(get_text("pricing_distribution_title", lang), get_text("pricing_distribution_subtitle", lang))
+chart_explanation(get_text("chart_dist_explanation", lang))
 left, right = st.columns(2)
 
 with left:
     d = view.dropna(subset=["price_per_sqm"])
     if len(d) > 0:
-        fig = px.histogram(d, x="price_per_sqm", nbins=40, title="Price Distribution Across Selected Districts")
+        fig = px.histogram(d, x="price_per_sqm", nbins=40, title="Price Distribution Across Districts")
         fig.update_layout(xaxis_title="AED per sqm", yaxis_title="Listing Count")
         st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
-        takeaway(f"Distribution reveals {(d['price_per_sqm'] > d['price_per_sqm'].quantile(0.75)).sum()} listings above the 75th percentile, indicating concentrated premium inventory.")
+        premium_units = (d['price_per_sqm'] > d['price_per_sqm'].quantile(0.75)).sum()
+        premium_insight(f"Premium segment concentration: {premium_units} listings ({premium_units/len(d)*100:.0f}% of sample) are priced above the 75th percentile, indicating meaningful high-end inventory.", "📊")
 
 with right:
     d = view.dropna(subset=["days_on_market"])
     if len(d) > 0:
-        fig = px.histogram(d, x="days_on_market", nbins=40, title="Time-to-Exit Distribution")
+        fig = px.histogram(d, x="days_on_market", nbins=40, title="Market Exit Speed Distribution")
         fig.update_layout(xaxis_title="Days on Market", yaxis_title="Listing Count")
         st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
-        takeaway(f"Fast sales (≤30 days) represent {snap['fast_sale_ratio_30d']:.0%} of market, signaling {'robust' if snap['fast_sale_ratio_30d'] > 0.25 else 'moderate'} liquidity.")
+        quick_sales_pct = snap['fast_sale_ratio_30d']
+        liquidity_signal = 'very strong' if quick_sales_pct > 0.35 else 'strong' if quick_sales_pct > 0.25 else 'moderate'
+        premium_insight(f"Liquidity signal: {quick_sales_pct:.0%} of properties sell within 30 days, reflecting {liquidity_signal} market absorption capacity.", "⚡")
 
 st.divider()
 
 # ===== PRICE-TIME RELATIONSHIP =====
 section_intro("Pricing Discipline Analysis", "Relationship between asking price and time-to-exit.")
+chart_explanation("This scatter plot reveals whether higher prices correlate with longer time-on-market. In disciplined markets, prices align with demand, so overpriced properties take longer to sell. A strong negative correlation indicates pricing efficiency.")
 d = view.dropna(subset=["price_per_sqm", "days_on_market"]).copy()
 if len(d) < 30:
     st.info("Insufficient data for pricing discipline analysis.")
@@ -105,37 +114,44 @@ else:
         x="price_per_sqm",
         y="days_on_market",
         hover_data=[c for c in ["district", "bedrooms", "building_name", "size_sqm"] if c in d.columns],
-        title="Price vs. Market Exit Speed (Disciplined Markets Show Negative Correlation)",
+        title="Price vs. Market Exit Speed",
         opacity=0.6,
     )
     fig.update_layout(xaxis_title="AED per sqm", yaxis_title="Days on Market")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
     corr = d['price_per_sqm'].corr(d['days_on_market'])
-    correlation_signal = "stronger" if abs(corr) > 0.3 else "moderate" if abs(corr) > 0.15 else "weaker"
-    takeaway(f"Correlation of {corr:.2f} suggests {correlation_signal} pricing discipline: {'evidence of overpricing issues' if corr > 0.1 else 'market pricing appears relatively efficient'}")
+    if corr > 0.1:
+        insight_msg = "positive correlation signals potential overpricing of higher-end units"
+    elif corr < -0.1:
+        insight_msg = "negative correlation indicates disciplined pricing across market segments"
+    else:
+        insight_msg = "weak correlation suggests pricing independence from absorption rates"
+    premium_insight(f"Market efficiency: {corr:+.2f} correlation — {insight_msg}.", "🎯")
 
 st.divider()
 
 # ===== FLOOR PREMIUM ANALYSIS =====
 section_intro("Vertical Market Premium", "How price varies by floor band (weighted by unit size).")
+chart_explanation("This line chart maps the weighted average price per sqm across floor bands. It shows whether upper floors command premium valuations due to views, amenities, and prestige — a key driver of value in high-rise markets.")
 fp = floor_weighted_price(view)
 if fp.empty:
     st.info("Floor premium analysis unavailable (insufficient data with floor information).")
 else:
     fig = px.line(fp, x="floor_bucket", y="weighted_price_sqm", markers=True, 
-                  title="Weighted Price by Floor Band", line_shape="spline")
+                  title="Price Premium by Floor Band", line_shape="spline")
     fig.update_layout(xaxis_title="Floor Band", yaxis_title="Weighted AED per sqm")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
     if len(fp) > 1:
         max_floor = fp.loc[fp['weighted_price_sqm'].idxmax()]
         min_floor = fp.loc[fp['weighted_price_sqm'].idxmin()]
         premium_pct = ((max_floor['weighted_price_sqm'] - min_floor['weighted_price_sqm']) / min_floor['weighted_price_sqm'] * 100)
-        takeaway(f"Upper floors command a {premium_pct:.1f}% premium over lower floors, reflecting view and amenity preferences.")
+        premium_insight(f"Vertical stratification: Properties in {max_floor['floor_bucket']} command a {premium_pct:.1f}% premium relative to {min_floor['floor_bucket']}, reflecting strong amenity valuation.", "🏢")
 
 st.divider()
 
 # ===== PRICE TREND ANALYSIS =====
 section_intro("Temporal Pricing Trend", "How market pricing has evolved over the observation period.")
+chart_explanation("This line chart tracks median asking prices on a monthly basis. Upward trends indicate strengthening market conditions and limited supply, while downward trends may signal increased supply, weaker demand, or market corrections.")
 ts = price_timeseries_proxy(view)
 if ts.empty:
     st.info("Pricing trend analysis unavailable (insufficient historical data).")
@@ -148,16 +164,17 @@ else:
         first_price = ts.iloc[0]['median_price_sqm']
         last_price = ts.iloc[-1]['median_price_sqm']
         trend_pct = ((last_price - first_price) / first_price * 100)
-        trend_dir = "strengthening" if trend_pct >= 0 else "softening"
-        takeaway(f"Median pricing shows {trend_dir} dynamics ({trend_pct:+.1f}%), reflecting evolving market conditions over the period.")
+        trend_dir = "strengthening" if trend_pct > 2 else "weakening" if trend_pct < -2 else "stable"
+        premium_insight(f"Market trajectory: Median pricing is {trend_dir} ({trend_pct:+.1f}% over period), reflecting {('supply-constrained strength' if trend_pct > 0 else 'normalization pressures')}.", "📈")
 
 st.divider()
 
 # ===== PRODUCT MIX ANALYSIS =====
 section_intro("Product Mix & Market Composition", "Distribution of inventory by bedrooms and unit type.")
+chart_explanation("This donut chart visualizes how your portfolio is composed across bedroom counts. Understanding product mix is critical for identifying concentration risk and assessing whether your holdings align with target market segments.")
 tc = typology_concentration(view)
 if not tc.empty:
-    fig = px.pie(tc, names="bedrooms", values="count", title="Market Distribution by Bedroom Count (Donut View)")
+    fig = px.pie(tc, names="bedrooms", values="count", title="Inventory Distribution by Bedroom Count")
     fig.update_traces(hole=0.40, textposition='inside', textinfo='label+percent')
     fig.update_layout(
         legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.02),
@@ -165,7 +182,8 @@ if not tc.empty:
     )
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
     largest_segment = tc.loc[tc['count'].idxmax()]
-    takeaway(f"{largest_segment['bedrooms']}-bedroom units comprise {(largest_segment['count']/tc['count'].sum()*100):.0f}% of the portfolio, indicating dominant product preference.")
+    concentration = (largest_segment['count']/tc['count'].sum()*100)
+    premium_insight(f"Product concentration: {largest_segment['bedrooms']}-bedroom units represent {concentration:.0f}% of inventory, indicating {'significant concentration risk' if concentration > 50 else 'balanced portfolio diversification'}.", "🔍")
 else:
     st.info("Product mix analysis unavailable.")
 

@@ -1,10 +1,12 @@
 import streamlit as st
 import plotly.express as px
 
-from src.app.ui import hero, kpi_card, apply_plotly_theme
+from src.app.ui import hero, kpi_card, apply_plotly_theme, section_intro, chart_explanation
+from src.app.translations import get_text
 
+lang = st.session_state.get("language", "en")
 
-hero("Yield", "Income efficiency, yield dispersion & drivers (descriptive only).")
+hero(get_text("yield_title", lang), get_text("yield_subtitle", lang))
 
 df = st.session_state.get("df")
 if df is None or df.empty:
@@ -28,13 +30,17 @@ with c4: kpi_card("P90 net yield", f"{d['net_yield'].quantile(0.9):.2f}%" if len
 
 st.divider()
 
-fig = px.histogram(d, x="net_yield", nbins=35, title="Distribution: Net yield (%)")
-fig.update_layout(xaxis_title="Net yield (%)", yaxis_title="Count")
+section_intro("Income Yield Distribution", "Understanding rental return variability across properties.")
+chart_explanation("This histogram displays the distribution of net yields across your portfolio. Left-skewed distributions indicate concentrated high-yield properties, while right-skewed patterns show more competitive moderate-yield assets.")
+fig = px.histogram(d, x="net_yield", nbins=35, title="Net Yield Distribution")
+fig.update_layout(xaxis_title="Net yield (%)", yaxis_title="Listing Count")
 st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)
 
 st.divider()
 
 if "price_per_sqm" in view.columns:
+    section_intro("Price-Yield Tradeoff Analysis", "Relationship between acquisition cost and income return.")
+    chart_explanation("This scatter plot reveals the price-yield relationship. Typically, premium-priced properties (upper-right quadrant) have lower yields, while value properties (lower-left) often yield more. This chart identifies compelling value propositions and potential bargains.")
     s = view.dropna(subset=["price_per_sqm", "net_yield"]).copy()
     if len(s) >= 40:
         fig = px.scatter(
@@ -43,7 +49,7 @@ if "price_per_sqm" in view.columns:
             y="net_yield",
             color="district" if "district" in s.columns else None,
             opacity=0.55,
-            title="Scatter: AED/sqm vs Net yield",
+            title="Price vs. Yield Trade-off",
         )
         fig.update_layout(xaxis_title="AED per sqm", yaxis_title="Net yield (%)")
         st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)
@@ -51,8 +57,10 @@ if "price_per_sqm" in view.columns:
 # Vacancy (if present)
 if "vacancy_days" in view.columns:
     st.divider()
+    section_intro("Vacancy Duration Analysis", "Understanding absorption patterns for vacant units.")
+    chart_explanation("This histogram shows how long vacant units remain unoccupied. Properties clustering on the left indicate quick re-leasing, while properties on the right suggest challenging market absorption.")
     v = view.dropna(subset=["vacancy_days"]).copy()
     if len(v) >= 30:
-        fig = px.histogram(v, x="vacancy_days", nbins=35, title="Vacancy days distribution (proxy)")
-        fig.update_layout(xaxis_title="Vacancy days", yaxis_title="Count")
+        fig = px.histogram(v, x="vacancy_days", nbins=35, title="Vacancy Days Distribution")
+        fig.update_layout(xaxis_title="Vacancy days", yaxis_title="Listing Count")
         st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)

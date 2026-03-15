@@ -2,10 +2,12 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from src.app.ui import hero, kpi_card, apply_plotly_theme
+from src.app.ui import hero, kpi_card, apply_plotly_theme, section_intro, chart_explanation
+from src.app.translations import get_text
 
+lang = st.session_state.get("language", "en")
 
-hero("Data", "Coverage, completeness, freshness (descriptive only).")
+hero(get_text("data_title", lang), get_text("data_subtitle", lang))
 
 df = st.session_state.get("df")
 if df is None or df.empty:
@@ -28,6 +30,8 @@ else:
 st.divider()
 
 # Coverage table
+section_intro("Column Coverage Analysis", "Data completeness by field.")
+chart_explanation("This table shows what percentage of records have non-null values for each column. Fields with low coverage may have limited analytical value. Identify which fields need improvement for your analysis.")
 summary = (
     df.notna()
     .mean()
@@ -38,20 +42,22 @@ summary = (
     .rename(columns={"index": "column"})
     .sort_values("coverage_pct")
 )
-st.subheader("Column coverage")
 st.dataframe(summary, use_container_width=True)
 
 st.divider()
 
 # Coverage chart
-fig = px.bar(summary.tail(25), x="coverage_pct", y="column", orientation="h", title="Top 25 columns by coverage (%)")
+section_intro("Data Completeness Visualization", "Field coverage ranked.")
+chart_explanation("This bar chart highlights the most complete fields in your dataset. Aim for high coverage (>80%) in critical analytical fields like price, location, and time-on-market.")
+fig = px.bar(summary.tail(25), x="coverage_pct", y="column", orientation="h", title="Top 25 Columns by Coverage (%)")
 fig.update_layout(xaxis_title="Coverage (%)", yaxis_title="Column")
 st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)
 
 # Missingness by district
 if "district" in df.columns:
     st.divider()
-    st.subheader("Coverage by district (core fields)")
+    section_intro("Coverage by District", "Data quality variance across markets.")
+    chart_explanation("This table breaks down field coverage by district, revealing whether data quality varies geographically. Uneven coverage may affect district-level comparisons.")
     core = [c for c in ["price_per_sqm", "days_on_market", "net_yield", "service_charge_psm_year", "latitude", "longitude"] if c in df.columns]
     if core:
         rows = []

@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 from pathlib import Path
+from src.app.translations import get_text
 
 
 @st.cache_data(show_spinner=False)
@@ -39,9 +40,20 @@ def inject_lovable_skin():
         [data-testid="stStatusWidget"] {visibility: hidden;}
         [data-testid="stDecoration"] {display: none;}
 
-        /* Page background - light institutional */
+        /* Premium color palette */
+        :root {
+            --ba-bg-primary: #FAF8F4;
+            --ba-bg-secondary: #F3F0EA;
+            --ba-card-bg: #FFFFFF;
+            --ba-border: #E7E2D9;
+            --ba-text-primary: #1F4E79;
+            --ba-text-secondary: #2D5A91;
+            --ba-accent-light: #F0F4F8;
+        }
+
+        /* Page background - warm light institutional */
         .stApp, [data-testid="stAppViewContainer"] {
-            background-color: #f8f9fb;
+            background-color: #FAF8F4;
         }
 
         /* Layout */
@@ -49,60 +61,60 @@ def inject_lovable_skin():
             padding-top: 1.2rem;
             padding-bottom: 2.0rem;
             max-width: 1440px;
-            background-color: #f8f9fb;
+            background-color: #FAF8F4;
         }
 
         html, body, [class*="css"] {
             font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
         }
 
-        /* Cards - white with soft shadow */
+        /* Premium cards - white with elegant border */
         .ba-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
+            background: #FFFFFF;
+            border: 1px solid #E7E2D9;
             border-radius: 12px;
             padding: 18px 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         }
         .ba-card:hover {
-            border-color: #d1d5db;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            border-color: #D9CFC0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .ba-title {
             font-size: 11px;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            color: #6b7280;
+            color: #1F4E79;
             margin-bottom: 8px;
         }
         .ba-value {
             font-size: 26px;
             font-weight: 700;
             letter-spacing: -0.02em;
-            color: #1f2937;
+            color: #1F4E79;
             line-height: 1.1;
         }
         .ba-sub {
             margin-top: 6px;
             font-size: 12px;
-            color: #9ca3af;
+            color: #2D5A91;
         }
 
         /* Buttons (pills) */
         .stButton>button {
             border-radius: 8px;
-            border: 1px solid #d1d5db;
-            background: #ffffff;
-            color: #1f2937;
+            border: 1px solid #E7E2D9;
+            background: #FFFFFF;
+            color: #1F4E79;
             padding: 0.55rem 0.9rem;
             transition: all 120ms ease;
             font-weight: 500;
         }
         .stButton>button:hover {
-            border-color: #2563eb;
-            background: #f3f4f6;
-            color: #2563eb;
+            border-color: #1F4E79;
+            background: #F0F4F8;
+            color: #1F4E79;
             transform: translateY(-1px);
         }
 
@@ -120,33 +132,33 @@ def inject_lovable_skin():
         }
         div[role="radiogroup"] > label {
             border-radius: 8px !important;
-            border: 1px solid #d1d5db !important;
-            background: #ffffff !important;
+            border: 1px solid #E7E2D9 !important;
+            background: #FFFFFF !important;
             padding: 0.5rem 1rem !important;
             margin: 0 !important;
             font-size: 13px !important;
             transition: all 120ms ease !important;
             cursor: pointer !important;
             white-space: nowrap !important;
-            color: #1f2937 !important;
+            color: #1F4E79 !important;
         }
         div[role="radiogroup"] > label:hover {
-            border-color: #2563eb !important;
-            background: #f0f4ff !important;
+            border-color: #1F4E79 !important;
+            background: #F0F4F8 !important;
         }
         div[role="radiogroup"] > label > span:first-child {
             display: none !important;
         }
         div[role="radiogroup"] > label > span:last-child {
-            color: #1f2937 !important;
+            color: #1F4E79 !important;
         }
         div[role="radiogroup"] > label:has(input:checked) {
-            border-color: #2563eb !important;
-            background: #eff6ff !important;
-            color: #2563eb !important;
+            border-color: #1F4E79 !important;
+            background: #F0F4F8 !important;
+            color: #1F4E79 !important;
         }
         div[role="radiogroup"] > label:has(input:checked) > span:last-child {
-            color: #2563eb !important;
+            color: #1F4E79 !important;
             font-weight: 600 !important;
         }
 
@@ -154,20 +166,25 @@ def inject_lovable_skin():
         .stDataFrame, [data-testid="stDataFrame"] {
             border-radius: 8px;
             overflow: hidden;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #E7E2D9;
+        }
+
+        /* Table text - all blue */
+        [data-testid="stDataFrame"] td, [data-testid="stDataFrame"] th {
+            color: #1F4E79 !important;
         }
 
         /* Dividers */
         hr {
             border: none;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid #E7E2D9;
             margin: 1.2rem 0;
         }
 
         /* Selection bar (light card container) */
         .ba-selection-bar {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
+            background: #FFFFFF;
+            border: 1px solid #E7E2D9;
             border-radius: 8px;
             padding: 12px 16px;
             margin-bottom: 1.4rem;
@@ -175,7 +192,7 @@ def inject_lovable_skin():
 
         /* Coverage line */
         .ba-coverage {
-            color: #6b7280;
+            color: #2D5A91;
             font-size: 13px;
             letter-spacing: 0.01em;
             margin: 0.8rem 0 1.2rem 0;
@@ -188,18 +205,33 @@ def inject_lovable_skin():
         .ba-section-title {
             font-size: 18px;
             font-weight: 600;
-            color: #1f2937;
+            color: #1F4E79;
             margin: 0 0 0.3rem 0;
         }
         .ba-section-subtitle {
             font-size: 14px;
-            color: #6b7280;
+            color: #2D5A91;
             margin: 0;
         }
 
+        /* Explanation block - premium pale background */
+        .ba-explanation {
+            background: #F9F8F5;
+            border-left: 2px solid #1F4E79;
+            border-radius: 4px;
+            padding: 12px 14px;
+            margin: 14px 0;
+            font-size: 13px;
+            color: #1F4E79;
+            line-height: 1.6;
+            font-style: normal;
+        }
+
+        /* Insight box - premium subtle styling */
         .ba-insight-box {
-            background: #eff6ff;
-            border-left: 4px solid #2563eb;
+            background: #FAF8F4;
+            border: 1px solid #E7E2D9;
+            border-left: 3px solid #1F4E79;
             border-radius: 6px;
             padding: 14px 16px;
             margin-bottom: 0.8rem;
@@ -207,50 +239,51 @@ def inject_lovable_skin():
         .ba-insight-title {
             font-size: 13px;
             font-weight: 600;
-            color: #1e40af;
-            margin: 0 0 0.3rem 0;
+            color: #1F4E79;
+            margin: 0 0 0.4rem 0;
         }
         .ba-insight-text {
             font-size: 13px;
-            color: #1f2937;
+            color: #1F4E79;
             margin: 0;
             line-height: 1.5;
         }
 
+        /* Takeaway - institutional note */
         .ba-takeaway {
-            background: #f0fdf4;
-            border-left: 4px solid #16a34a;
-            padding: 10px 14px;
+            background: #FAF8F4;
+            border-left: 3px solid #1F4E79;
             border-radius: 4px;
+            padding: 11px 14px;
             margin-top: 0.8rem;
             font-size: 13px;
-            color: #15803d;
-            font-style: italic;
+            color: #1F4E79;
+            font-style: normal;
         }
 
         .ba-metric-group-label {
             font-size: 13px;
             font-weight: 600;
-            color: #6b7280;
+            color: #1F4E79;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin: 1.4rem 0 0.8rem 0;
             padding-top: 0.8rem;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid #E7E2D9;
         }
 
-        /* Executive summary */
+        /* Executive summary - premium styling */
         .ba-exec-summary {
-            background: #f3f4f6;
+            background: #F9F8F5;
             border-radius: 8px;
             padding: 16px 18px;
             margin-bottom: 1.6rem;
-            border-left: 4px solid #1f2937;
+            border-left: 3px solid #1F4E79;
         }
         .ba-exec-summary-title {
             font-size: 14px;
             font-weight: 700;
-            color: #1f2937;
+            color: #1F4E79;
             margin: 0 0 0.8rem 0;
         }
         .ba-exec-summary-points {
@@ -258,12 +291,20 @@ def inject_lovable_skin():
         }
         .ba-exec-summary-points li {
             font-size: 14px;
-            color: #374151;
+            color: #1F4E79;
             margin-bottom: 0.6rem;
             line-height: 1.5;
         }
-        .ba-exec-summary-points li:last-child {
-            margin-bottom: 0;
+        /* Selectbox for language selector */
+        .stSelectbox > div > div {
+            border-radius: 6px;
+        }
+        
+        .ba-coverage {
+            font-size: 12px;
+            color: #2D5A91;
+            margin: 0 0 1rem 0;
+            font-weight: 500;
         }
         </style>
         """,
@@ -276,17 +317,17 @@ def hero(title: str, subtitle: str):
         f"""
         <div style="
             padding: 0.9rem 0 1.1rem 0;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #E7E2D9;
             margin-bottom: 1.2rem;
         ">
           <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
             <div>
-              <h1 style="margin:0;letter-spacing:-0.03em;font-size:2.1rem;color:#1f2937;">{title}</h1>
-              <p style="color:#6b7280;margin:0.35rem 0 0 0;font-size:1.05rem;max-width:860px;">
+              <h1 style="margin:0;letter-spacing:-0.03em;font-size:2.1rem;color:#1F4E79;">{title}</h1>
+              <p style="color:#2D5A91;margin:0.35rem 0 0 0;font-size:1.05rem;max-width:860px;">
                 {subtitle}
               </p>
             </div>
-            <div style="text-align:right;color:#9ca3af;font-size:12px;padding-bottom:6px;">
+            <div style="text-align:right;color:#2D5A91;font-size:12px;padding-bottom:6px;">
               Dubai • Real Estate Analytics
             </div>
           </div>
@@ -315,8 +356,8 @@ def top_nav(active: str, items: list[str]) -> str:
     
     with col1:
         st.markdown(
-            "<div style='font-weight:900;letter-spacing:-0.03em;font-size:18px;padding-top:10px;color:#1f2937;'>Barzel Analytics</div>"
-            "<div style='color:#9ca3af;font-size:12px;margin-top:-2px;'>Dubai</div>",
+            "<div style='font-weight:900;letter-spacing:-0.03em;font-size:18px;padding-top:10px;color:#1F4E79;'>Barzel Analytics</div>"
+            "<div style='color:#2D5A91;font-size:12px;margin-top:-2px;'>Dubai</div>",
             unsafe_allow_html=True,
         )
     
@@ -331,7 +372,7 @@ def top_nav(active: str, items: list[str]) -> str:
     
     with col2:
         st.markdown(
-            "<div style='text-align:right;color:#9ca3af;font-size:12px;padding-top:10px;'>"
+            "<div style='text-align:right;color:#2D5A91;font-size:12px;padding-top:10px;'>"
             "<strong>Real Estate Analytics</strong></div>",
             unsafe_allow_html=True,
         )
@@ -346,7 +387,7 @@ def selection_bar(options: list, label: str = "Districts", default: list = None,
     
     col1, col2 = st.columns([0.4, 3], gap="small")
     with col1:
-        st.markdown("<span style='font-size:13px;color:#1f2937;font-weight:600;'>" + label + "</span>", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:13px;color:#1F4E79;font-weight:600;'>" + label + "</span>", unsafe_allow_html=True)
     
     with col2:
         if default is None:
@@ -398,28 +439,40 @@ def render_plotly_chart(fig, use_container_width: bool = True):
 
 
 def apply_plotly_theme(fig):
-    """Apply light institutional theme to Plotly figures."""
+    """Apply premium light institutional theme to Plotly figures - all text blue."""
     fig.update_layout(
-        paper_bgcolor="#ffffff",
-        plot_bgcolor="#fafbfc",
-        font_color="#1f2937",
-        title_font_size=16,
-        title_font_color="#1f2937",
-        margin=dict(l=10, r=10, t=55, b=10),
-        legend=dict(font=dict(color="#1f2937")),
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FAF8F4",
+        font_color="#1F4E79",
+        title_font_size=14,
+        title_font_color="#1F4E79",
+        title_font_family="Arial, sans-serif",
+        margin=dict(l=10, r=10, t=50, b=10),
+        legend=dict(
+            font=dict(color="#1F4E79", size=12),
+            bgcolor="rgba(255,255,255,0.8)",
+            bordercolor="#E7E2D9",
+            borderwidth=1
+        ),
         hovermode="closest",
     )
     fig.update_xaxes(
-        gridcolor="#e5e7eb", 
-        zerolinecolor="#e5e7eb",
-        title_font_color="#1f2937",
-        tickfont=dict(color="#6b7280")
+        gridcolor="#F3F0EA", 
+        zerolinecolor="#E7E2D9",
+        title_font_color="#1F4E79",
+        title_font_size=12,
+        tickfont=dict(color="#2D5A91", size=11),
+        showgrid=True,
+        gridwidth=0.5
     )
     fig.update_yaxes(
-        gridcolor="#e5e7eb", 
-        zerolinecolor="#e5e7eb",
-        title_font_color="#1f2937",
-        tickfont=dict(color="#6b7280")
+        gridcolor="#F3F0EA", 
+        zerolinecolor="#E7E2D9",
+        title_font_color="#1F4E79",
+        title_font_size=12,
+        tickfont=dict(color="#2D5A91", size=11),
+        showgrid=True,
+        gridwidth=0.5
     )
     return fig
 
@@ -464,4 +517,19 @@ def takeaway(text: str):
 def metric_group_label(text: str):
     """Render a label for grouped metrics."""
     html = f'<div class="ba-metric-group-label">{text}</div>'
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def chart_explanation(text: str):
+    """Render a clean explanation block for chart context."""
+    html = f'<div class="ba-explanation">{text}</div>'
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def premium_insight(insight: str, icon: str = "📊"):
+    """Render a premium insight callout block."""
+    html = f'''<div class="ba-insight-box">
+        <div class="ba-insight-title">{icon} Key Insight</div>
+        <div class="ba-insight-text">{insight}</div>
+    </div>'''
     st.markdown(html, unsafe_allow_html=True)

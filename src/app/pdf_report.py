@@ -22,6 +22,7 @@ from reportlab.platypus import (
 
 from src.analytics.market_views import snapshot, snapshots_by
 from src.analytics.scoring_pdf_only import barzel_score_details, barzel_scores_by_district
+from src.app.translations import get_text
 
 
 @dataclass
@@ -29,8 +30,15 @@ class ReportConfig:
     investor_profile: str
     districts: List[str]
     notes: str = ""
-    report_title: str = "Dubai District Intelligence Report"
-    subtitle: str = "Market situation, scoring methodology, and decision support"
+    language: str = "en"
+    report_title: str = ""
+    subtitle: str = ""
+    
+    def __post_init__(self):
+        if not self.report_title:
+            self.report_title = "Dubai District Intelligence Report"
+        if not self.subtitle:
+            self.subtitle = "Market situation, scoring methodology, and decision support"
 
 
 def build_pdf_report(df_all: pd.DataFrame, df_view: pd.DataFrame, cfg: ReportConfig) -> bytes:
