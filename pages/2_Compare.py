@@ -33,6 +33,7 @@ if g.empty:
     st.stop()
 
 g = g.copy()
+g["district"] = g["district"].astype(str)
 
 # ===== COMPARATIVE SUMMARY =====
 section_intro(
@@ -49,20 +50,20 @@ slowest_liquidity = g.loc[g["median_dom"].idxmax()]
 
 summary_points = [
     narrative_text(
-        f"Pricing ranges from {int(most_affordable['median_price_sqm']):,} AED/sqm ({most_affordable.name}) to {int(most_expensive['median_price_sqm']):,} AED/sqm ({most_expensive.name}), reflecting {((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm'] - 1) * 100):.0f}% market segmentation.",
-        f"Le pricing s'etend de {int(most_affordable['median_price_sqm']):,} AED/sqm ({most_affordable.name}) a {int(most_expensive['median_price_sqm']):,} AED/sqm ({most_expensive.name}), soit environ {((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm'] - 1) * 100):.0f}% d'ecart entre les deux extremes.",
+        f"Pricing ranges from {int(most_affordable['median_price_sqm']):,} AED/sqm ({most_affordable['district']}) to {int(most_expensive['median_price_sqm']):,} AED/sqm ({most_expensive['district']}), reflecting {((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm'] - 1) * 100):.0f}% market segmentation.",
+        f"Le pricing s'etend de {int(most_affordable['median_price_sqm']):,} AED/sqm ({most_affordable['district']}) a {int(most_expensive['median_price_sqm']):,} AED/sqm ({most_expensive['district']}), soit environ {((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm'] - 1) * 100):.0f}% d'ecart entre les deux extremes.",
     ),
     narrative_text(
-        f"Most liquid market: {most_liquid.name} exits in median {int(most_liquid['median_dom'])} days. Slowest: {slowest_liquidity.name} ({int(slowest_liquidity['median_dom'])} days).",
-        f"Le marche le plus liquide est {most_liquid.name} avec une sortie mediane en {int(most_liquid['median_dom'])} jours, contre {slowest_liquidity.name} a {int(slowest_liquidity['median_dom'])} jours.",
+        f"Most liquid market: {most_liquid['district']} exits in median {int(most_liquid['median_dom'])} days. Slowest: {slowest_liquidity['district']} ({int(slowest_liquidity['median_dom'])} days).",
+        f"Le marche le plus liquide est {most_liquid['district']} avec une sortie mediane en {int(most_liquid['median_dom'])} jours, contre {slowest_liquidity['district']} a {int(slowest_liquidity['median_dom'])} jours.",
     ),
     narrative_text(
-        f"Yield spreads across districts: {best_yields.name} leads at {best_yields['net_yield_median']:.2f}% versus a low of {g['net_yield_median'].min():.2f}%.",
-        f"Les rendements restent disperses : {best_yields.name} mene a {best_yields['net_yield_median']:.2f}% contre un point bas a {g['net_yield_median'].min():.2f}%.",
+        f"Yield spreads across districts: {best_yields['district']} leads at {best_yields['net_yield_median']:.2f}% versus a low of {g['net_yield_median'].min():.2f}%.",
+        f"Les rendements restent disperses : {best_yields['district']} mene a {best_yields['net_yield_median']:.2f}% contre un point bas a {g['net_yield_median'].min():.2f}%.",
     ),
     narrative_text(
-        f"Operating cost efficiency varies materially: {lowest_costs.name} charges {int(lowest_costs['service_charge_median']):,} AED/sqm/yr versus {int(g['service_charge_median'].max()):,} in the highest-cost district.",
-        f"L'efficacite des charges varie nettement : {lowest_costs.name} se situe a {int(lowest_costs['service_charge_median']):,} AED/sqm/yr contre {int(g['service_charge_median'].max()):,} dans le district le plus couteux.",
+        f"Operating cost efficiency varies materially: {lowest_costs['district']} charges {int(lowest_costs['service_charge_median']):,} AED/sqm/yr versus {int(g['service_charge_median'].max()):,} in the highest-cost district.",
+        f"L'efficacite des charges varie nettement : {lowest_costs['district']} se situe a {int(lowest_costs['service_charge_median']):,} AED/sqm/yr contre {int(g['service_charge_median'].max()):,} dans le district le plus couteux.",
     ),
 ]
 
@@ -96,6 +97,7 @@ section_intro("Complete District Benchmarking", "All metrics for comparative ana
 
 table_sorted = g.sort_values("n_obs", ascending=False)
 display_cols = {
+    "district": "District",
     "n_obs": "Listings",
     "median_price_sqm": "Median Price (AED/sqm)",
     "median_dom": "Median DOM (days)",
@@ -142,7 +144,6 @@ c1, c2 = st.columns(2)
 
 with c1:
     sorted_price = g.sort_values("median_price_sqm", ascending=False).copy()
-    sorted_price["district"] = sorted_price.index.astype(str)
 
     fig = px.bar(
         sorted_price,
@@ -193,7 +194,6 @@ c1, c2 = st.columns(2)
 
 with c1:
     sorted_dom = g.sort_values("median_dom").copy()
-    sorted_dom["district"] = sorted_dom.index.astype(str)
 
     fig = px.bar(
         sorted_dom,
@@ -217,7 +217,6 @@ with c1:
 
 with c2:
     sorted_fast_sales = g.sort_values("fast_sale_ratio_30d", ascending=False).copy()
-    sorted_fast_sales["district"] = sorted_fast_sales.index.astype(str)
 
     fig = px.bar(
         sorted_fast_sales,
@@ -247,7 +246,6 @@ c1, c2 = st.columns(2)
 
 with c1:
     sorted_yield = g.sort_values("net_yield_median", ascending=False).copy()
-    sorted_yield["district"] = sorted_yield.index.astype(str)
 
     fig = px.bar(
         sorted_yield,
@@ -270,7 +268,6 @@ with c1:
 
 with c2:
     scatter_df = g.copy()
-    scatter_df["district"] = scatter_df.index.astype(str)
 
     scatter_cols = ["district", "median_price_sqm", "net_yield_median"]
     if "n_obs" in scatter_df.columns:
@@ -347,7 +344,6 @@ c1, c2 = st.columns(2)
 
 with c1:
     sorted_costs = g.sort_values("service_charge_median").copy()
-    sorted_costs["district"] = sorted_costs.index.astype(str)
 
     fig = px.bar(
         sorted_costs,
@@ -373,7 +369,6 @@ with c2:
         g_temp["service_charge_median"] /
         (g_temp["net_yield_median"] * g_temp["median_price_sqm"] / 100)
     ).fillna(0)
-    g_temp["district"] = g_temp.index.astype(str)
 
     sorted_burden = g_temp.sort_values("cost_to_yield")
 
