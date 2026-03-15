@@ -309,6 +309,53 @@ TRANSLATIONS = {
         "district_coverage_sub": "Data quality variance across markets.",
         "district_explanation": "This table breaks down field coverage by district, revealing whether data quality varies geographically. Uneven coverage may affect district-level comparisons.",
         
+        # === Liquidity Page Secondary KPI Labels ===
+        "kpi_dom_coverage": "DOM coverage",
+        "non_null_share": "Non-null share",
+        "kpi_median_dom": "Median DOM",
+        "exit_speed": "Exit speed",
+        "kpi_fast_sale_30": "Fast-sale ≤30d",
+        "liquidity_signal": "Liquidity signal",
+        
+        # === Pricing Page KPI Labels ===
+        "kpi_price_sqm_coverage": "Price/sqm coverage",
+        "kpi_median_aed_sqm": "Median AED/sqm",
+        "central_pricing": "Central pricing",
+        "kpi_p90_aed_sqm": "P90 AED/sqm",
+        "upper_pricing": "Upper pricing",
+        "selection_size": "Selection size",
+        
+        # === Yield Page KPI Labels ===
+        "kpi_yield_coverage": "Yield coverage",
+        "kpi_median_yield": "Median net yield",
+        "central_yield": "Central yield",
+        "kpi_p90_yield": "Upper yield",
+        "upper_yield": "Upper yield",
+        
+        # === Costs Page KPI Labels ===
+        "kpi_charges_coverage": "Charges coverage",
+        "kpi_median_charges": "Median charges",
+        "aed_sqm_year": "AED/sqm/year",
+        "kpi_p90_charges": "P90 charges",
+        "upper_tail": "Upper tail",
+        
+        # === Metric Group Labels (Page 1 & others) ===
+        "metric_group_coverage": "Coverage & Data Quality",
+        "metric_group_pricing": "Pricing Market",
+        "metric_group_liquidity": "Liquidity & Exit Dynamics",
+        "metric_group_yield": "Yield & Income",
+        "metric_group_costs": "Operating Costs",
+        
+        # === Chart Section Headers ===
+        "section_time_exit_distribution": "Time-to-Exit Distribution",
+        "section_time_exit_absorption": "Understanding absorption speed and market liquidity.",
+        "exit_distribution_explanation": "This histogram shows the distribution of days-on-market for all listed properties. Left-skewed distributions indicate fast absorption; right-skewed patterns suggest slower market conditions.",
+        "section_pricing_discipline_title": "Pricing Discipline & Liquidity",
+        "section_pricing_discipline_sub": "Relationship between asking price and time-to-exit.",
+        "pricing_discipline_micro": "This scatter plot reveals pricing efficiency. Negatively correlated patterns indicate disciplined pricing — overpriced units linger. Positively correlated or scattered patterns may signal market inefficiency or product heterogeneity.",
+        "section_district_liquidity_title": "District Liquidity Benchmark",
+        "section_district_liquidity_sub": "Comparative absorption metrics by market.",
+        
         # === PDF Report Builder ===
         "report_builder_title": "PDF Report Builder",
         "report_builder_subtitle": "Generate comprehensive analyst report with scores and recommendations.",
@@ -648,6 +695,53 @@ TRANSLATIONS = {
         "section_coverage_district": "Couverture par quartier",
         "district_coverage_sub": "Variance qualité données entre marchés.",
         "district_explanation": "Ce tableau détaille la couverture des champs par quartier, révélant si la qualité données varie géographiquement. Une couverture inégale peut affecter les comparaisons au niveau du quartier.",
+        
+        # === Liquidity Page Secondary KPI Labels ===
+        "kpi_dom_coverage": "Couverture DOM",
+        "non_null_share": "Part non-nulle",
+        "kpi_median_dom": "DOM médian",
+        "exit_speed": "Vitesse de sortie",
+        "kpi_fast_sale_30": "Ventes rapides ≤30j",
+        "liquidity_signal": "Signal de liquidité",
+        
+        # === Pricing Page KPI Labels ===
+        "kpi_price_sqm_coverage": "Couverture prix/m²",
+        "kpi_median_aed_sqm": "AED/m² médian",
+        "central_pricing": "Tarification centrale",
+        "kpi_p90_aed_sqm": "P90 AED/m²",
+        "upper_pricing": "Tarification supérieure",
+        "selection_size": "Taille de sélection",
+        
+        # === Yield Page KPI Labels ===
+        "kpi_yield_coverage": "Couverture rendement",
+        "kpi_median_yield": "Rendement net médian",
+        "central_yield": "Rendement central",
+        "kpi_p90_yield": "Rendement sup.",
+        "upper_yield": "Rendement supérieur",
+        
+        # === Costs Page KPI Labels ===
+        "kpi_charges_coverage": "Couverture charges",
+        "kpi_median_charges": "Charges médiane",
+        "aed_sqm_year": "AED/m²/an",
+        "kpi_p90_charges": "P90 charges",
+        "upper_tail": "Queue supérieure",
+        
+        # === Metric Group Labels (Page 1 & others) ===
+        "metric_group_coverage": "Couverture et qualité des données",
+        "metric_group_pricing": "Marché des prix",
+        "metric_group_liquidity": "Liquidité et dynamique de sortie",
+        "metric_group_yield": "Rendement et revenus",
+        "metric_group_costs": "Coûts d'exploitation",
+        
+        # === Chart Section Headers ===
+        "section_time_exit_distribution": "Distribution des délais de sortie",
+        "section_time_exit_absorption": "Comprendre la vitesse d'absorption et la liquidité marché.",
+        "exit_distribution_explanation": "Cet histogramme montre la distribution des jours-sur-marché pour toutes les propriétés listées. Les distributions asymétriques à gauche indiquent une absorption rapide ; les patterns asymétriques à droite suggèrent des conditions marché plus lentes.",
+        "section_pricing_discipline_title": "Discipline tarifaire et liquidité",
+        "section_pricing_discipline_sub": "Relation entre prix demandé et délai de sortie.",
+        "pricing_discipline_micro": "Ce graphique de dispersion révèle l'efficacité tarifaire. Les patterns négativement corrélés indiquent une tarification disciplinée — les unités surévaluées s'éternisent. Les patterns positifs ou dispersés peuvent signaler une inefficacité ou hétérogénéité.",
+        "section_district_liquidity_title": "Évaluation comparative de liquidité du quartier",
+        "section_district_liquidity_sub": "Indicateurs d'absorption comparatifs par marché.",
         
         # === PDF Report Builder ===
         "report_builder_title": "Générateur de rapport PDF",

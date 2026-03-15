@@ -46,32 +46,32 @@ if insights:
 st.divider()
 
 # ===== GROUPED KPIs =====
-metric_group_label("Coverage & Data Quality")
+metric_group_label(get_text("metric_group_coverage", lang))
 c1, c2, c3 = st.columns(3)
-with c1: kpi_card("Sample Size", f"{snap['n_obs']:,}", "Active listings")
-with c2: kpi_card("Districts", f"{len(view['district'].unique())}" if "district" in view.columns else "1", "Selected")
-with c3: kpi_card("Data Completeness", f"{(view[['price_per_sqm', 'days_on_market']].notna().mean().mean() * 100):.0f}%", "Key fields")
+with c1: kpi_card(get_text("kpi_sample_size", lang), f"{snap['n_obs']:,}", get_text("active_listings", lang))
+with c2: kpi_card(get_text("kpi_districts", lang), f"{len(view['district'].unique())}" if "district" in view.columns else "1", get_text("selected", lang))
+with c3: kpi_card(get_text("kpi_data_completeness", lang), f"{(view[['price_per_sqm', 'days_on_market']].notna().mean().mean() * 100):.0f}%", get_text("key_fields", lang))
 
-metric_group_label("Pricing Market")
+metric_group_label(get_text("metric_group_pricing", lang))
 c1, c2, c3 = st.columns(3)
-with c1: kpi_card("Median Price", f"{int(snap['median_price_sqm']):,}" if snap["median_price_sqm"] == snap["median_price_sqm"] else "n/a", "AED/sqm")
-with c2: kpi_card("Price Variation", f"{snap['price_consistency_cv']:.2f}" if snap["price_consistency_cv"] == snap["price_consistency_cv"] else "n/a", "Coefficient of Variation")
-with c3: kpi_card("P90 Threshold", f"{view['price_per_sqm'].quantile(0.9):.0f}" if 'price_per_sqm' in view.columns else "n/a", "90th percentile")
+with c1: kpi_card(get_text("kpi_median_price", lang), f"{int(snap['median_price_sqm']):,}" if snap["median_price_sqm"] == snap["median_price_sqm"] else "n/a", get_text("aed_sqm", lang))
+with c2: kpi_card(get_text("price_variation", lang), f"{snap['price_consistency_cv']:.2f}" if snap["price_consistency_cv"] == snap["price_consistency_cv"] else "n/a", get_text("coefficient_variation", lang))
+with c3: kpi_card(get_text("p90_threshold", lang), f"{view['price_per_sqm'].quantile(0.9):.0f}" if 'price_per_sqm' in view.columns else "n/a", get_text("percentile_90", lang))
 
-metric_group_label("Liquidity & Exit Dynamics")
+metric_group_label(get_text("metric_group_liquidity", lang))
 c1, c2, c3 = st.columns(3)
-with c1: kpi_card("Median Time-to-Exit", f"{int(snap['median_dom']):,}" if snap["median_dom"] == snap["median_dom"] else "n/a", "Days")
-with c2: kpi_card("Quick Sales ≤30d", f"{snap['fast_sale_ratio_30d']:.0%}" if snap["fast_sale_ratio_30d"] == snap["fast_sale_ratio_30d"] else "n/a", "% of units")
+with c1: kpi_card(get_text("chart_median_exit", lang), f"{int(snap['median_dom']):,}" if snap["median_dom"] == snap["median_dom"] else "n/a", get_text("days_unit", lang))
+with c2: kpi_card(get_text("chart_quick_sales", lang), f"{snap['fast_sale_ratio_30d']:.0%}" if snap["fast_sale_ratio_30d"] == snap["fast_sale_ratio_30d"] else "n/a", "% of units")
 with c3: kpi_card("Liquidity Depth", f"{snap['liquidity_depth_ratio']:.2f}" if snap["liquidity_depth_ratio"] == snap["liquidity_depth_ratio"] else "n/a", "listings/median DOM")
 
-metric_group_label("Yield & Income")
+metric_group_label(get_text("metric_group_yield", lang))
 c1, c2 = st.columns(2)
-with c1: kpi_card("Median Net Yield", f"{snap['net_yield_median']:.2f}%" if snap["net_yield_median"] == snap["net_yield_median"] else "n/a", "Annual return")
+with c1: kpi_card(get_text("chart_median_net_yield", lang), f"{snap['net_yield_median']:.2f}%" if snap["net_yield_median"] == snap["net_yield_median"] else "n/a", "Annual return")
 with c2: kpi_card("Yield Efficiency", f"{snap['yield_efficiency_ratio']*100:.3f}%" if snap["yield_efficiency_ratio"] == snap["yield_efficiency_ratio"] else "n/a", "Yield/Price ratio")
 
-metric_group_label("Operating Costs")
+metric_group_label(get_text("metric_group_costs", lang))
 c1, c2 = st.columns(2)
-with c1: kpi_card("Annual Service Charge", f"{int(snap['service_charge_median']):,}" if snap["service_charge_median"] == snap["service_charge_median"] else "n/a", "AED/sqm/yr median")
+with c1: kpi_card(get_text("chart_service_charge", lang), f"{int(snap['service_charge_median']):,}" if snap["service_charge_median"] == snap["service_charge_median"] else "n/a", get_text("aed_sqm_year", lang))
 with c2: kpi_card("Service Charge Impact", f"{((snap['service_charge_median'] / (snap['median_price_sqm'] * 0.05)) * 100):.1f}%" if (snap["service_charge_median"] == snap["service_charge_median"] and snap["median_price_sqm"] == snap["median_price_sqm"]) else "n/a", "Estimated % of yield")
 
 st.divider()
@@ -103,8 +103,8 @@ with right:
 st.divider()
 
 # ===== PRICE-TIME RELATIONSHIP =====
-section_intro("Pricing Discipline Analysis", "Relationship between asking price and time-to-exit.")
-chart_explanation("This scatter plot reveals whether higher prices correlate with longer time-on-market. In disciplined markets, prices align with demand, so overpriced properties take longer to sell. A strong negative correlation indicates pricing efficiency.")
+section_intro(get_text("pricing_discipline_title", lang), get_text("pricing_discipline_subtitle", lang))
+chart_explanation(get_text("discipline_explanation", lang))
 d = view.dropna(subset=["price_per_sqm", "days_on_market"]).copy()
 if len(d) < 30:
     st.info("Insufficient data for pricing discipline analysis.")
