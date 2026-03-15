@@ -1,7 +1,10 @@
 import streamlit as st
 import plotly.express as px
 
-from src.app.ui import hero, kpi_card, selection_bar, apply_plotly_theme, section_intro, chart_explanation
+from src.app.ui import (
+    hero, kpi_card, selection_bar, apply_plotly_theme,
+    section_intro, chart_explanation, premium_insight, narrative_text
+)
 from src.app.translations import get_text
 from src.analytics.kpi_engine import floor_weighted_price
 
@@ -46,7 +49,7 @@ st.markdown("")
 
 # Map
 section_intro("Geospatial Distribution", "Interactive map view of all listed properties in the selected districts.")
-chart_explanation("This map visualizes the geographic spread of your market inventory, color-coded by price per square meter. Clustering patterns reveal submarkets and premium location concentrations.")
+chart_explanation(get_text("geo_explanation", lang))
 
 need = ["latitude", "longitude"]
 if not all(c in view.columns for c in need):
@@ -72,13 +75,20 @@ fig = px.scatter_mapbox(
     title="Market Distribution Map",
 )
 fig.update_layout(mapbox_style="carto-positron", margin=dict(l=0, r=0, t=55, b=0))
-st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+premium_insight(
+    narrative_text(
+        "Geographic clustering highlights where inventory density and pricing intensity overlap, helping isolate premium micro-markets.",
+        "Les zones de concentration montrent ou se croisent densite d'offre et intensite de prix, ce qui aide a isoler les micro-marches les plus premiums.",
+    ),
+    "🗺️",
+)
 
 st.markdown("")
 
 # Floor premium (weighted)
 section_intro("Floor Premium Analysis", "How price varies across floor levels in high-rise buildings.")
-chart_explanation("This line chart shows weighted average prices by floor band, revealing whether upper floors command premiums due to views, amenities, and prestige.")
+chart_explanation(get_text("floor_micro_explanation", lang))
 fp = floor_weighted_price(view)
 if fp.empty:
     st.info("Insufficient data for floor premium analysis.")
@@ -92,6 +102,13 @@ else:
     )
     fig.update_layout(xaxis_title="Floor range", yaxis_title="Weighted AED per sqm")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
+    premium_insight(
+        narrative_text(
+            "The floor curve shows whether vertical premium is a meaningful pricing driver in the selected stock.",
+            "La courbe par etage permet de verifier si la prime verticale constitue un moteur de prix significatif sur le stock selectionne.",
+        ),
+        "🏙️",
+    )
 
 st.markdown("")
 

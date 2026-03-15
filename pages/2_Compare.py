@@ -5,7 +5,8 @@ import pandas as pd
 
 from src.app.ui import (
     hero, kpi_card, selection_bar, apply_plotly_theme,
-    section_intro, takeaway, chart_explanation, premium_insight
+    section_intro, takeaway, chart_explanation, premium_insight,
+    executive_summary, narrative_text
 )
 from src.app.translations import get_text
 from src.analytics.market_views import snapshots_by
@@ -47,14 +48,25 @@ lowest_costs = g.loc[g["service_charge_median"].idxmin()]
 slowest_liquidity = g.loc[g["median_dom"].idxmax()]
 
 summary_points = [
-    f"Pricing ranges from {int(most_affordable['median_price_sqm']):,} AED/sqm ({most_affordable.name}) to {int(most_expensive['median_price_sqm']):,} AED/sqm ({most_expensive.name}), reflecting {((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm'] - 1) * 100):.0f}% market segmentation.",
-    f"Most liquid market: {most_liquid.name} exits in median {int(most_liquid['median_dom'])} days. Slowest: {slowest_liquidity.name} ({int(slowest_liquidity['median_dom'])} days).",
-    f"Yield spreads across districts: {best_yields.name} leads at {best_yields['net_yield_median']:.2f}% versus a low of {g['net_yield_median'].min():.2f}%.",
-    f"Operating cost efficiency varies materially: {lowest_costs.name} charges {int(lowest_costs['service_charge_median']):,} AED/sqm/yr versus {int(g['service_charge_median'].max()):,} in the highest-cost district.",
+    narrative_text(
+        f"Pricing ranges from {int(most_affordable['median_price_sqm']):,} AED/sqm ({most_affordable.name}) to {int(most_expensive['median_price_sqm']):,} AED/sqm ({most_expensive.name}), reflecting {((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm'] - 1) * 100):.0f}% market segmentation.",
+        f"Le pricing s'etend de {int(most_affordable['median_price_sqm']):,} AED/sqm ({most_affordable.name}) a {int(most_expensive['median_price_sqm']):,} AED/sqm ({most_expensive.name}), soit environ {((most_expensive['median_price_sqm'] / most_affordable['median_price_sqm'] - 1) * 100):.0f}% d'ecart entre les deux extremes.",
+    ),
+    narrative_text(
+        f"Most liquid market: {most_liquid.name} exits in median {int(most_liquid['median_dom'])} days. Slowest: {slowest_liquidity.name} ({int(slowest_liquidity['median_dom'])} days).",
+        f"Le marche le plus liquide est {most_liquid.name} avec une sortie mediane en {int(most_liquid['median_dom'])} jours, contre {slowest_liquidity.name} a {int(slowest_liquidity['median_dom'])} jours.",
+    ),
+    narrative_text(
+        f"Yield spreads across districts: {best_yields.name} leads at {best_yields['net_yield_median']:.2f}% versus a low of {g['net_yield_median'].min():.2f}%.",
+        f"Les rendements restent disperses : {best_yields.name} mene a {best_yields['net_yield_median']:.2f}% contre un point bas a {g['net_yield_median'].min():.2f}%.",
+    ),
+    narrative_text(
+        f"Operating cost efficiency varies materially: {lowest_costs.name} charges {int(lowest_costs['service_charge_median']):,} AED/sqm/yr versus {int(g['service_charge_median'].max()):,} in the highest-cost district.",
+        f"L'efficacite des charges varie nettement : {lowest_costs.name} se situe a {int(lowest_costs['service_charge_median']):,} AED/sqm/yr contre {int(g['service_charge_median'].max()):,} dans le district le plus couteux.",
+    ),
 ]
 
-for point in summary_points[:3]:
-    st.markdown(f"• {point}")
+executive_summary(summary_points[:3])
 
 st.divider()
 
@@ -125,7 +137,7 @@ st.divider()
 
 # ===== PRICING COMPARISON =====
 section_intro("Pricing Landscape", "Median AED/sqm across districts reveals market segmentation.")
-chart_explanation("These visualizations compare asking prices across your selected districts. The bar chart ranks districts from most to least expensive, while the box plot reveals price distribution spread and outliers within each market.")
+chart_explanation(get_text("pricing_chart_explanation", lang))
 c1, c2 = st.columns(2)
 
 with c1:
@@ -143,7 +155,13 @@ with c1:
 
     price_spread = (g["median_price_sqm"].max() - g["median_price_sqm"].min()) / g["median_price_sqm"].mean()
     market_structure = "distinct market segments with clear tier stratification" if price_spread > 0.20 else "relatively homogeneous pricing across districts"
-    premium_insight(f"Market structure: Price variance of ±{price_spread:.0%} indicates {market_structure}.", "📊")
+    premium_insight(
+        narrative_text(
+            f"Market structure: Price variance of ±{price_spread:.0%} indicates {market_structure}.",
+            f"Un ecart de prix de ±{price_spread:.0%} confirme {('des segments de marche bien differencies' if price_spread > 0.20 else 'une structure de prix relativement homogene entre districts')}.",
+        ),
+        "📊",
+    )
 
 with c2:
     box_df = view.dropna(subset=["district", "price_per_sqm"]).copy()
@@ -158,13 +176,19 @@ with c2:
 
     district_std_mean = box_df.groupby("district")["price_per_sqm"].std().mean()
     discipline = "tight pricing discipline with minimal outliers" if district_std_mean < 500 else "significant price heterogeneity suggesting diverse product mix or quality variance"
-    premium_insight(f"Price discipline: Districts show {discipline}.", "🎯")
+    premium_insight(
+        narrative_text(
+            f"Price discipline: Districts show {discipline}.",
+            f"Les districts montrent {('une discipline de prix plutot serree' if district_std_mean < 500 else 'une heterogeneite de prix marquee, probablement liee au mix produit ou a la qualite des actifs')}.",
+        ),
+        "🎯",
+    )
 
 st.divider()
 
 # ===== LIQUIDITY COMPARISON =====
 section_intro("Market Liquidity & Exit Dynamics", "Days-on-market reveals relative market depth and absorption capacity.")
-chart_explanation("These charts compare absorption speed across districts. Faster exits (shorter DOM) indicate stronger buyer demand or better-priced inventory. The quick-sales percentage shows the proportion of units selling within 30 days.")
+chart_explanation(get_text("liquidity_chart_explanation", lang))
 c1, c2 = st.columns(2)
 
 with c1:
@@ -183,7 +207,13 @@ with c1:
     fastest = g["median_dom"].min()
     slowest = g["median_dom"].max()
     liquidity_delta = int(slowest - fastest)
-    premium_insight(f"Liquidity variance: {liquidity_delta}-day range between most ({int(fastest)}d) and least liquid ({int(slowest)}d) markets.", "⚡")
+    premium_insight(
+        narrative_text(
+            f"Liquidity variance: {liquidity_delta}-day range between most ({int(fastest)}d) and least liquid ({int(slowest)}d) markets.",
+            f"L'ecart de liquidite atteint {liquidity_delta} jours entre le marche le plus rapide ({int(fastest)}j) et le plus lent ({int(slowest)}j).",
+        ),
+        "⚡",
+    )
 
 with c2:
     sorted_fast_sales = g.sort_values("fast_sale_ratio_30d", ascending=False).copy()
@@ -200,13 +230,19 @@ with c2:
 
     avg_quick_ratio = g["fast_sale_ratio_30d"].mean()
     momentum = "strong buyer momentum and efficient absorption" if avg_quick_ratio > 0.25 else "moderate market pull with selective demand"
-    premium_insight(f"Quick-sale dynamics: {avg_quick_ratio:.0%} portfolio average indicates {momentum}.", "📈")
+    premium_insight(
+        narrative_text(
+            f"Quick-sale dynamics: {avg_quick_ratio:.0%} portfolio average indicates {momentum}.",
+            f"En moyenne, {avg_quick_ratio:.0%} du portefeuille se vend en moins de 30 jours, ce qui traduit {('une traction acheteuse forte' if avg_quick_ratio > 0.25 else 'une demande plus selective')}.",
+        ),
+        "📈",
+    )
 
 st.divider()
 
 # ===== YIELD COMPARISON =====
 section_intro("Income Return Profile", "Net yields reflect rental market dynamics relative to acquisition prices.")
-chart_explanation("These visualizations compare income returns across districts. Higher yields indicate stronger rental markets relative to property prices, while the scatter plot reveals the price-yield tradeoff: premium locations often command lower yields due to higher acquisition costs.")
+chart_explanation(get_text("yield_chart_explanation", lang))
 c1, c2 = st.columns(2)
 
 with c1:
@@ -224,7 +260,13 @@ with c1:
 
     yield_range = g["net_yield_median"].max() - g["net_yield_median"].min()
     yield_spread = yield_range / g["net_yield_median"].mean()
-    premium_insight(f"Yield dispersion: {yield_range:.2f}% absolute range (±{yield_spread:.0%} relative) across districts indicates differentiated income dynamics.", "💰")
+    premium_insight(
+        narrative_text(
+            f"Yield dispersion: {yield_range:.2f}% absolute range (±{yield_spread:.0%} relative) across districts indicates differentiated income dynamics.",
+            f"Un spread de rendement de {yield_range:.2f}% (±{yield_spread:.0%} relatif) signale des dynamiques de revenu distinctes selon les districts.",
+        ),
+        "💰",
+    )
 
 with c2:
     scatter_df = g.copy()
@@ -288,13 +330,19 @@ with c2:
         insight = "positive relationship — higher-priced districts also offer better returns"
     else:
         insight = "weak or no relationship — price and yield move independently"
-    premium_insight(f"Price-yield dynamics: {corr_price_yield:+.2f} correlation signals {insight}.", "🔗")
+    premium_insight(
+        narrative_text(
+            f"Price-yield dynamics: {corr_price_yield:+.2f} correlation signals {insight}.",
+            f"La correlation de {corr_price_yield:+.2f} suggere {('une relation inverse marquee entre prix et rendement' if corr_price_yield < -0.3 else 'une relation positive entre prix et rendement' if corr_price_yield > 0.2 else 'une relation faible entre prix et rendement')}.",
+        ),
+        "🔗",
+    )
 
 st.divider()
 
 # ===== OPERATING COSTS COMPARISON =====
 section_intro("Cost Efficiency Analysis", "Service charges and maintenance costs impact net investor returns.")
-chart_explanation("These charts compare operating costs (service charges) across districts and measure their burden relative to rental yields. Higher cost-to-yield ratios reduce net returns, making cost efficiency a key investment consideration.")
+chart_explanation(get_text("costs_chart_explanation", lang))
 c1, c2 = st.columns(2)
 
 with c1:
@@ -311,7 +359,13 @@ with c1:
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
     cost_range = (g["service_charge_median"].max() - g["service_charge_median"].min()) / g["service_charge_median"].mean()
-    premium_insight(f"Cost variance: ±{cost_range:.0%} of mean indicates different asset maintenance standards and building age profiles across districts.", "🏗️")
+    premium_insight(
+        narrative_text(
+            f"Cost variance: ±{cost_range:.0%} of mean indicates different asset maintenance standards and building age profiles across districts.",
+            f"Un ecart de cout de ±{cost_range:.0%} autour de la moyenne suggere des standards d'entretien et des ages de parc differents entre districts.",
+        ),
+        "🏗️",
+    )
 
 with c2:
     g_temp = g.copy()
@@ -332,13 +386,22 @@ with c2:
     fig.update_layout(xaxis_title="District", yaxis_title="Cost Ratio")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True, config={"displayModeBar": False})
 
-    premium_insight("The cost-to-yield ratio shows what fraction of annual rental income is consumed by operating costs. Lower ratios preserve more cash flow for investors.", "💼")
+    premium_insight(
+        narrative_text(
+            "The cost-to-yield ratio shows what fraction of annual rental income is consumed by operating costs. Lower ratios preserve more cash flow for investors.",
+            "Le ratio charge-rendement mesure la part du revenu locatif annuel absorbee par les couts d'exploitation. Plus il est bas, plus le cash-flow investisseur est preserve.",
+        ),
+        "💼",
+    )
 
 st.divider()
 
 # ===== PRODUCT MIX COMPARISON =====
 section_intro("Product Type Pricing", "How different property types (bedrooms) command premia across districts.")
-chart_explanation("This line chart shows how median pricing varies by bedroom count across your selected districts. Steeper slopes indicate stronger buyer segmentation by product size.")
+chart_explanation(narrative_text(
+    "This line chart shows how median pricing varies by bedroom count across your selected districts. Steeper slopes indicate stronger buyer segmentation by product size.",
+    "Ce graphique montre comment le prix median evolue selon le nombre de chambres dans les districts selectionnes. Des pentes plus marquees signalent une segmentation produit plus forte.",
+))
 if "bedrooms" in view.columns and "price_per_sqm" in view.columns:
     d = view.dropna(subset=["district", "bedrooms", "price_per_sqm"]).copy()
     if len(d) >= 30:
@@ -370,6 +433,12 @@ if "bedrooms" in view.columns and "price_per_sqm" in view.columns:
             most_differentiated = max(slopes, key=slopes.get)
             least_differentiated = min(slopes, key=slopes.get)
             avg_slope = sum(slopes.values()) / len(slopes) if slopes else 0
-            premium_insight(f"Product segmentation: {most_differentiated} shows steepest price-by-type curve, suggesting strongest buyer differentiation. Flatter curves indicate commodity pricing.", "📏")
+            premium_insight(
+                narrative_text(
+                    f"Product segmentation: {most_differentiated} shows steepest price-by-type curve, suggesting strongest buyer differentiation. Flatter curves indicate commodity pricing.",
+                    f"{most_differentiated} presente la courbe prix-produit la plus pentue, ce qui signale la segmentation acheteur la plus marquee. Des courbes plus plates renvoient a un pricing plus commoditise.",
+                ),
+                "📏",
+            )
     else:
         st.info("Insufficient typology data for product mix analysis.")

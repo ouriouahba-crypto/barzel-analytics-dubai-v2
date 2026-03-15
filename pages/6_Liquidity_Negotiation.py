@@ -1,19 +1,22 @@
 import streamlit as st
 import plotly.express as px
 
-from src.app.ui import hero, kpi_card, apply_plotly_theme, section_intro, chart_explanation
+from src.app.ui import (
+    hero, kpi_card, selection_bar, apply_plotly_theme,
+    section_intro, chart_explanation, premium_insight, narrative_text
+)
 from src.app.translations import get_text
 
 lang = st.session_state.get("language", "en")
 
-hero(get_text("liquidity_title", lang), get_text("liquidity_subtitle", lang))
+hero("Liquidity Negotiation", "Time-to-exit, depth & pricing discipline (descriptive only).")
 
 df = st.session_state.get("df")
 if df is None or df.empty:
     st.stop()
 
 districts = sorted(df["district"].dropna().unique().tolist()) if "district" in df.columns else []
-sel = st.multiselect("Districts", districts, default=districts[:3] if len(districts) >= 3 else districts)
+sel = selection_bar(districts, label="Districts", default=districts[:3] if len(districts) >= 3 else districts)
 view = df[df["district"].isin(sel)] if sel else df
 
 need = ["days_on_market", "price_per_sqm"]
@@ -26,25 +29,32 @@ d = view.dropna(subset=["days_on_market"]).copy()
 
 # Cards
 c1, c2, c3, c4 = st.columns(4)
-with c1: kpi_card(get_text("kpi_listings", lang), f"{len(view):,}", get_text("non_null_share", lang))
-with c2: kpi_card(get_text("kpi_dom_coverage", lang), f"{view['days_on_market'].notna().mean():.0%}", get_text("non_null_share", lang))
-with c3: kpi_card(get_text("kpi_median_dom", lang), f"{int(d['days_on_market'].median()):,}" if len(d) else "n/a", get_text("exit_speed", lang))
-with c4: kpi_card(get_text("kpi_fast_sale_30", lang), f"{(d['days_on_market'] <= 30).mean():.0%}" if len(d) else "n/a", get_text("liquidity_signal", lang))
+with c1: kpi_card("Listings", f"{len(view):,}", "Selection size")
+with c2: kpi_card("DOM coverage", f"{view['days_on_market'].notna().mean():.0%}", "Non-null share")
+with c3: kpi_card("Median DOM", f"{int(d['days_on_market'].median()):,}" if len(d) else "n/a", "Exit speed")
+with c4: kpi_card("Fast-sale ≤30d", f"{(d['days_on_market'] <= 30).mean():.0%}" if len(d) else "n/a", "Liquidity signal")
 
 st.divider()
 
 # DOM distribution
-section_intro(get_text("section_time_exit_distribution", lang), get_text("section_time_exit_absorption", lang))
-chart_explanation(get_text("exit_distribution_explanation", lang))
-fig = px.histogram(d, x="days_on_market", nbins=45, title=get_text("chart_days_market", lang))
+section_intro("Time-to-Exit Distribution", "Understanding absorption speed and market liquidity.")
+chart_explanation(get_text("exit_explanation", lang))
+fig = px.histogram(d, x="days_on_market", nbins=45, title="Distribution: Days on Market")
 fig.update_layout(xaxis_title="Days on Market", yaxis_title="Listing Count")
 st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)
+premium_insight(
+    narrative_text(
+        "A tighter distribution on the left usually indicates healthier absorption and less stale inventory.",
+        "Une distribution plus resserree sur la gauche indique generalement une absorption plus saine et moins de stock ancien.",
+    ),
+    "⏱️",
+)
 
 st.divider()
 
 # Price vs DOM scatter
-section_intro(get_text("section_pricing_discipline_title", lang), get_text("section_pricing_discipline_sub", lang))
-chart_explanation(get_text("pricing_discipline_micro", lang))
+section_intro("Pricing Discipline & Liquidity", "Relationship between asking price and time-to-exit.")
+chart_explanation(get_text("discipline_micro_explanation", lang))
 s = view.dropna(subset=["price_per_sqm", "days_on_market"]).copy()
 if len(s) >= 40:
     fig = px.scatter(
@@ -58,12 +68,19 @@ if len(s) >= 40:
     )
     fig.update_layout(xaxis_title="AED per sqm", yaxis_title="Days on Market")
     st.plotly_chart(apply_plotly_theme(fig), use_container_width=True)
+    premium_insight(
+        narrative_text(
+            "The pricing-discipline scatter helps separate justified premiums from inventory that may be sticking due to overpricing.",
+            "Le nuage de pricing discipline aide a distinguer les primes justifiees des actifs qui restent en ligne a cause d'un prix trop eleve.",
+        ),
+        "🎯",
+    )
 
 st.divider()
 
 # Fast-sale table by district
 if "district" in view.columns:
-    section_intro(get_text("section_district_liquidity_title", lang), get_text("section_district_liquidity_sub", lang))
+    section_intro("District Liquidity Benchmark", "Comparative absorption metrics by market.")
     t = view.dropna(subset=["days_on_market"]).groupby("district")["days_on_market"].agg(
         n="count",
         median="median",

@@ -780,12 +780,22 @@ TRANSLATIONS = {
 }
 
 
+FRENCH_NARRATIVE_KEYS = {
+    key
+    for key in TRANSLATIONS["fr"].keys()
+    if "explanation" in key or key.startswith("insight_")
+}
+
+
 def get_text(key: str, lang: str = "en") -> str:
     """
     Retrieve translated text by key.
     Gracefully fallback to English if translation missing.
     """
     if lang not in TRANSLATIONS:
+        lang = "en"
+
+    if lang == "fr" and key not in FRENCH_NARRATIVE_KEYS:
         lang = "en"
     
     if key in TRANSLATIONS[lang]:

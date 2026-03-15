@@ -81,6 +81,22 @@ def inject_lovable_skin():
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
+        /* Shared chart and data containers */
+        [data-testid="stPlotlyChart"], [data-testid="stDataFrame"] {
+            background: #FFFFFF;
+            border: 1px solid #E7E2D9;
+            border-radius: 12px;
+            padding: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        [data-testid="stAlert"] {
+            background: #F9F8F5;
+            border: 1px solid #E7E2D9;
+            color: #1F4E79;
+            border-radius: 10px;
+        }
+
         .ba-title {
             font-size: 11px;
             letter-spacing: 0.05em;
@@ -299,6 +315,15 @@ def inject_lovable_skin():
         .stSelectbox > div > div {
             border-radius: 6px;
         }
+
+        .stMultiSelect [data-baseweb="select"] > div,
+        .stSelectbox [data-baseweb="select"] > div,
+        .stTextArea textarea {
+            background: #FFFFFF !important;
+            border: 1px solid #E7E2D9 !important;
+            color: #1F4E79 !important;
+            border-radius: 10px !important;
+        }
         
         .ba-coverage {
             font-size: 12px;
@@ -427,6 +452,11 @@ def format_metric(value: float, metric_type: str = "number") -> str:
         return f"{int(value):,}"
     else:
         return f"{value:.2f}"
+
+
+def narrative_text(en_text: str, fr_text: str) -> str:
+    """Return French only for narrative copy when the app is in FR mode."""
+    return fr_text if st.session_state.get("language", "en") == "fr" else en_text
 
 
 def render_plotly_chart(fig, use_container_width: bool = True):
